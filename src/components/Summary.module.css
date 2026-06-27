@@ -1,0 +1,120 @@
+.wrapper { padding: 0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.pageTitle { font-size: 22px; font-weight: 600; }
+
+.monthSelect { width: auto; min-width: 140px; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 1.25rem;
+}
+
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+.metricVal { font-size: 22px; font-weight: 600; color: var(--text); }
+.metricLbl { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.cardTitle { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: 1fr 120px 80px 100px;
+  gap: 8px;
+  padding: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 80px 100px;
+  gap: 8px;
+  padding: 10px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+.tableRow:last-of-type { border-bottom: none; }
+
+.totalRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 80px 100px;
+  gap: 8px;
+  padding: 10px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-top: 2px solid var(--border-strong);
+  margin-top: 4px;
+}
+
+.workerName { font-weight: 500; }
+.muted { color: var(--text-secondary); }
+.salary { font-weight: 500; }
+
+.workerBlock { margin-bottom: 1.25rem; }
+.workerBlock:last-child { margin-bottom: 0; }
+
+.workerBlockName {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dateRow {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+}
+
+.workerTotal {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.empty {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .tableHeader, .tableRow, .totalRow { grid-template-columns: 1fr 80px 60px 90px; font-size: 13px; }
+}
