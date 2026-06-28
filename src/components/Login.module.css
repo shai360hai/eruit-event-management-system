@@ -1,0 +1,67 @@
+.wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 1rem;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+.logo {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.02em;
+}
+.logo i { font-size: 32px; }
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.sub {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+}
+
+.googleBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.googleBtn:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

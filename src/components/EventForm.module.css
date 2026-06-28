@@ -143,3 +143,42 @@
   .workerRow { grid-template-columns: 1fr 1fr 80px 32px; }
   .workerHeader { grid-template-columns: 1fr 1fr 80px 32px; }
 }
+
+.workerBtns { display: flex; gap: 6px; }
+
+.picker {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.pickerSearch {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  width: 100%;
+}
+.pickerSearch:focus { box-shadow: none; }
+
+.pickerList { max-height: 200px; overflow-y: auto; }
+
+.pickerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.pickerItem:last-child { border-bottom: none; }
+.pickerItem:hover { background: var(--bg); }
+
+.pickerName { font-size: 14px; font-weight: 500; color: var(--text); }
+.pickerRole { font-size: 13px; color: var(--text-secondary); }
+.pickerEmpty { padding: 14px; text-align: center; font-size: 13px; color: var(--text-hint); }

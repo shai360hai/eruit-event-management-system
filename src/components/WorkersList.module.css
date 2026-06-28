@@ -127,3 +127,56 @@
   .detailRow span:nth-child(3),
   .detailTotal span:nth-child(3) { display: none; }
 }
+
+.headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.addBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.addBtn:hover { opacity: 0.85; }
+
+.formCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow);
+}
+.formTitle { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.formActions { display: flex; gap: 8px; justify-content: flex-end; }
+.cancelBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 16px; border-radius: var(--radius-sm); }
+.cancelBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.saveBtn { background: var(--accent-bg); color: var(--accent-text); border: none; padding: 7px 20px; border-radius: var(--radius-sm); font-weight: 500; }
+.saveBtn:hover { opacity: 0.85; }
+.saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.tableHeader { grid-template-columns: 1fr 110px 110px 70px 100px 70px !important; }
+.workerRow { grid-template-columns: 1fr 110px 110px 70px 100px 70px !important; }
+.grandTotal { grid-template-columns: 1fr 110px 110px 70px 100px 70px !important; }
+
+.rowActions { display: flex; gap: 4px; justify-content: flex-end; }
+.editBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
+.editBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.deleteBtn { background: transparent; border: 1px solid var(--border); color: var(--text-hint); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
+.deleteBtn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+.noEvents { font-size: 13px; color: var(--text-hint); padding: 10px 0; }
+
+@media (max-width: 640px) {
+  .formGrid { grid-template-columns: 1fr 1fr; }
+  .tableHeader, .workerRow, .grandTotal { grid-template-columns: 1fr 70px 0 55px 85px 60px !important; }
+  .tableHeader span:nth-child(3), .workerRow span:nth-child(3), .grandTotal span:nth-child(3) { display: none; }
+}
