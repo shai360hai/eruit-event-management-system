@@ -51,9 +51,21 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
     setWorkers(ws => ws.filter(w => w._id !== id))
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!name.trim()) { alert('נא להזין שם אירוע'); return }
     const cleanWorkers = workers.filter(w => w.name.trim()).map(({ _id, ...w }) => w)
+
+    // Save new workers (not already in list) to workers table
+    const existingNames = new Set(allWorkers.map(w => w.name))
+    const newWorkers = cleanWorkers.filter(w => !existingNames.has(w.name))
+    if (newWorkers.length > 0) {
+      await supabase.from('workers').insert(newWorkers.map(w => ({
+        name: w.name,
+        role: w.role || '',
+        phone: ''
+      })))
+    }
+
     onSave({ name: name.trim(), location: location.trim(), date, time, workers: cleanWorkers })
   }
 
