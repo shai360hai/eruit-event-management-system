@@ -23,13 +23,14 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function signInWithGoogle() {
-    await supabase.auth.signInWithOAuth({
+    const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
-        queryParams: { access_type: 'offline', prompt: 'consent' }
+        skipBrowserRedirect: false,
+        redirectTo: `${window.location.origin}/`
       }
     })
+    if (error) alert('שגיאה בהתחברות: ' + error.message)
   }
 
   async function signOut() {

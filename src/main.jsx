@@ -4,16 +4,19 @@ import App from './App'
 import './index.css'
 import { supabase } from './supabase'
 
-// Handle OAuth redirect — exchange code for session
-const params = new URLSearchParams(window.location.search)
-const code = params.get('code')
+async function init() {
+  // Handle OAuth callback - look for hash or code in URL
+  const hash = window.location.hash
+  const search = window.location.search
 
-if (code) {
-  supabase.auth.exchangeCodeForSession(code).then(() => {
-    // Clean URL and reload
-    window.history.replaceState({}, '', window.location.pathname)
-    window.location.reload()
-  })
-} else {
+  if (hash.includes('access_token') || search.includes('code=')) {
+    const { data, error } = await supabase.auth.getSessionFromUrl()
+    if (!error && data.session) {
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  }
+
   ReactDOM.createRoot(document.getElementById('root')).render(<App />)
 }
+
+init()
