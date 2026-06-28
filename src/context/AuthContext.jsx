@@ -9,39 +9,38 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // Get initial session
     supabase.auth.getSession().then(({ data }) => {
       setUser(data.session?.user || null)
       setLoading(false)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listen for auth changes (including after OAuth redirect)
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user || null)
       setLoading(false)
+      // Clean URL after successful login
+      if (event === 'SIGNED_IN' && window.location.search.includes('code=')) {
+        window.history.replaceState({}, document.title, window.location.pathname)
+      }
     })
 
     return () => listener.subscription.unsubscribe()
   }, [])
 
   async function signInWithGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        skipBrowserRedirect: false,
-        redirectTo: `${window.location.origin}/`
-      }
+      options: { redirectTo: window.location.origin }
     })
-    if (error) alert('שגיאה בהתחברות: ' + error.message)
   }
 
   async function signOut() {
     await supabase.auth.signOut()
-    setUser(null)
   }
 
-  const isAdmin = user?.email === ADMIN_EMAIL
-
   return (
-    <AuthContext.Provider value={{ user, loading, isAdmin, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAdmin: user?.email === ADMIN_EMAIL, signInWithGoogle, signOut }}>
       {children}
     </AuthContext.Provider>
   )
