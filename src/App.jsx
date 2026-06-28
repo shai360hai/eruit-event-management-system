@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import EventsList from './components/EventsList'
 import EventForm from './components/EventForm'
 import Summary from './components/Summary'
+import Calendar from './components/Calendar'
+import WorkersList from './components/WorkersList'
 import { getEvents, createEvent, updateEvent, deleteEvent } from './api'
 import styles from './App.module.css'
 
 export default function App() {
   const [events, setEvents] = useState([])
-  const [view, setView] = useState('list') // list | form | summary
+  const [view, setView] = useState('calendar') // calendar | list | form | summary | workers
   const [editEvent, setEditEvent] = useState(null)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
@@ -29,7 +31,7 @@ export default function App() {
         const created = await createEvent(data)
         setEvents(es => [...es, created])
       }
-      setView('list')
+      setView('calendar')
       setEditEvent(null)
     } catch (err) {
       alert('שגיאה בשמירה: ' + err.message)
@@ -44,7 +46,7 @@ export default function App() {
     try {
       await deleteEvent(editEvent.id)
       setEvents(es => es.filter(e => e.id !== editEvent.id))
-      setView('list')
+      setView('calendar')
       setEditEvent(null)
     } catch (err) {
       alert('שגיאה במחיקה: ' + err.message)
@@ -55,7 +57,14 @@ export default function App() {
 
   function openAdd() { setEditEvent(null); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
-  function cancel() { setEditEvent(null); setView('list') }
+  function cancel() { setEditEvent(null); setView(view === 'form' ? 'calendar' : view) }
+
+  const NAV = [
+    { id: 'calendar', icon: 'ti-calendar-month', label: 'לוח שנה' },
+    { id: 'list',     icon: 'ti-list',            label: 'אירועים' },
+    { id: 'workers',  icon: 'ti-users',            label: 'עובדים' },
+    { id: 'summary',  icon: 'ti-chart-bar',        label: 'סיכום' },
+  ]
 
   return (
     <div className={styles.shell}>
@@ -65,19 +74,19 @@ export default function App() {
           ERUIT
         </div>
         <div className={styles.navLinks}>
-          <button
-            className={`${styles.navLink} ${view === 'list' || view === 'form' ? styles.active : ''}`}
-            onClick={() => { setView('list'); setEditEvent(null) }}
-          >
-            <i className="ti ti-calendar" /> אירועים
-          </button>
-          <button
-            className={`${styles.navLink} ${view === 'summary' ? styles.active : ''}`}
-            onClick={() => setView('summary')}
-          >
-            <i className="ti ti-chart-bar" /> סיכום חודשי
-          </button>
+          {NAV.map(n => (
+            <button
+              key={n.id}
+              className={`${styles.navLink} ${view === n.id ? styles.active : ''}`}
+              onClick={() => { setView(n.id); setEditEvent(null) }}
+            >
+              <i className={`ti ${n.icon}`} /> {n.label}
+            </button>
+          ))}
         </div>
+        <button className={styles.addBtn} onClick={openAdd}>
+          <i className="ti ti-plus" /> אירוע חדש
+        </button>
       </nav>
 
       <main className={styles.main}>
@@ -86,8 +95,6 @@ export default function App() {
             <i className="ti ti-loader-2" style={{ fontSize: 28, display: 'block', marginBottom: 8 }} />
             טוען נתונים...
           </div>
-        ) : view === 'summary' ? (
-          <Summary events={events} />
         ) : view === 'form' ? (
           <EventForm
             event={editEvent}
@@ -96,8 +103,14 @@ export default function App() {
             onCancel={cancel}
             loading={loading}
           />
-        ) : (
+        ) : view === 'calendar' ? (
+          <Calendar events={events} onEventClick={openEdit} />
+        ) : view === 'list' ? (
           <EventsList events={events} onEdit={openEdit} onAdd={openAdd} />
+        ) : view === 'workers' ? (
+          <WorkersList events={events} />
+        ) : (
+          <Summary events={events} />
         )}
       </main>
     </div>

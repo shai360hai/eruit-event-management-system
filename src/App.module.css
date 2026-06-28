@@ -7,10 +7,10 @@
 .nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem;
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
   height: 56px;
   position: sticky;
   top: 0;
@@ -23,31 +23,52 @@
   color: var(--text);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   letter-spacing: -0.02em;
+  margin-left: 8px;
 }
-.navBrand i { font-size: 22px; }
 
-.navLinks { display: flex; gap: 4px; }
+.navLinks {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
 
 .navLink {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  padding: 7px 14px;
-  font-size: 14px;
+  padding: 6px 12px;
+  font-size: 13px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-weight: 500;
+  white-space: nowrap;
 }
 .navLink:hover { background: var(--bg); color: var(--text); }
-.navLink.active { background: var(--bg); color: var(--text); }
+.navLink.active { background: var(--bg); color: var(--text); font-weight: 600; }
+
+.addBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-right: auto;
+}
+.addBtn:hover { opacity: 0.85; }
 
 .main {
   flex: 1;
-  max-width: 820px;
+  max-width: 860px;
   width: 100%;
   margin: 0 auto;
   padding: 1.5rem 1.25rem;
@@ -60,8 +81,10 @@
   font-size: 15px;
 }
 
-@media (max-width: 600px) {
-  .nav { padding: 0 1rem; }
-  .navBrand { font-size: 16px; }
-  .main { padding: 1rem; }
+@media (max-width: 640px) {
+  .nav { padding: 0 0.75rem; height: 52px; }
+  .navLink span, .navLink { font-size: 12px; padding: 5px 8px; }
+  .navBrand { font-size: 15px; }
+  .main { padding: 1rem 0.75rem; }
+  .addBtn { padding: 6px 10px; font-size: 12px; }
 }
