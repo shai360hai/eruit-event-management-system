@@ -68,6 +68,7 @@ function Shell() {
   }
 
   function openAdd() { setEditEvent(null); setView('form') }
+  function openAddWithDate(date) { setEditEvent({ _prefillDate: date }); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
   function cancel() { setEditEvent(null); setView('calendar') }
 
@@ -120,7 +121,7 @@ function Shell() {
         ) : view === 'form' ? (
           <EventForm event={editEvent} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (
-          <Calendar events={events} onEventClick={openEdit} />
+          <Calendar events={events} onEventClick={openEdit} onAddEvent={openAddWithDate} />
         ) : view === 'list' ? (
           <EventsList events={events} onEdit={openEdit} onAdd={openAdd} />
         ) : view === 'workers' ? (

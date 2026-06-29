@@ -172,3 +172,43 @@
   .dayName { font-size: 11px; }
   .dayNum { font-size: 12px; }
 }
+
+.noEvents {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+
+.addEventBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.addEventBtn:hover { opacity: 0.85; }
+
+.addEventBtnSmall {
+  background: transparent;
+  border: 1px dashed var(--border-strong);
+  color: var(--text-secondary);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  margin-top: 8px;
+  width: 100%;
+  justify-content: center;
+  transition: all .15s;
+}
+.addEventBtnSmall:hover { border-color: var(--text); color: var(--text); background: var(--bg); }

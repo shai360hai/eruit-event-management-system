@@ -26,7 +26,7 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
   useEffect(() => { refreshWorkers() }, [])
 
   useEffect(() => {
-    if (event) {
+    if (event && !event._prefillDate) {
       setName(event.name || '')
       setLocation(event.location || '')
       setDate(event.date || '')
@@ -35,7 +35,7 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
         ? event.workers.map(w => ({ ...w, _id: w._id || Date.now() + Math.random() }))
         : [])
     } else {
-      setName(''); setLocation(''); setDate(''); setTime(''); setWorkers([])
+      setName(''); setLocation(''); setDate(event?._prefillDate || ''); setTime(''); setWorkers([])
     }
   }, [event])
 

@@ -4,7 +4,7 @@ import styles from './Calendar.module.css'
 const DAYS = ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\'']
 const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
-export default function Calendar({ events, onEventClick }) {
+export default function Calendar({ events, onEventClick, onAddEvent }) {
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
   const [month, setMonth] = useState(today.getMonth())
@@ -93,7 +93,12 @@ export default function Calendar({ events, onEventClick }) {
             {` ${selected} ${MONTHS[month]}`}
           </div>
           {selectedEvents.length === 0 ? (
-            <div className={styles.noEvents}>אין אירועים ביום זה</div>
+            <div className={styles.noEvents}>
+              <span>אין אירועים ביום זה</span>
+              <button className={styles.addEventBtn} onClick={() => onAddEvent(selectedStr)}>
+                <i className="ti ti-plus" /> הוסף אירוע
+              </button>
+            </div>
           ) : (
             selectedEvents.map(ev => {
               const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
@@ -112,6 +117,9 @@ export default function Calendar({ events, onEventClick }) {
               )
             })
           )}
+          <button className={styles.addEventBtnSmall} onClick={() => onAddEvent(selectedStr)}>
+            <i className="ti ti-plus" /> הוסף אירוע לתאריך זה
+          </button>
         </div>
       )}
     </div>
