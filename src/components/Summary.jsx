@@ -4,7 +4,7 @@ import styles from './Summary.module.css'
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
 export default function Summary({ events }) {
-  const [month, setMonth] = useState('')
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
 
   const filtered = month
     ? events.filter(e => e.date && new Date(e.date + 'T00:00:00').getMonth() + 1 === parseInt(month))

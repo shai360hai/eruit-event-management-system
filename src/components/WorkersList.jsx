@@ -9,7 +9,7 @@ export default function WorkersList({ events }) {
   const { isAdmin } = useAuth()
   const [workers, setWorkers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [month, setMonth] = useState('')
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState(null)
   const [showForm, setShowForm] = useState(false)
