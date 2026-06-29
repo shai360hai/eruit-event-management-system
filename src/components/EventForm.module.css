@@ -53,7 +53,7 @@
 
 .workerHeader {
   display: grid;
-  grid-template-columns: 1fr 1fr 110px 36px;
+  grid-template-columns: 1fr 1fr 120px 100px 36px;
   gap: 8px;
   padding: 0 0 6px;
   font-size: 12px;
@@ -67,7 +67,7 @@
 
 .workerRow {
   display: grid;
-  grid-template-columns: 1fr 1fr 110px 36px;
+  grid-template-columns: 1fr 1fr 120px 100px 36px;
   gap: 8px;
   align-items: center;
   margin-bottom: 7px;
@@ -182,3 +182,28 @@
 .pickerName { font-size: 14px; font-weight: 500; color: var(--text); }
 .pickerRole { font-size: 13px; color: var(--text-secondary); }
 .pickerEmpty { padding: 14px; text-align: center; font-size: 13px; color: var(--text-hint); }
+
+.newWorkerBox {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  margin-bottom: 12px;
+}
+.newWorkerTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+}
+.newWorkerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.newWorkerActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}

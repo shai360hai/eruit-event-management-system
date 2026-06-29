@@ -14,9 +14,16 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
   const [showPicker, setShowPicker] = useState(false)
   const [pickerSearch, setPickerSearch] = useState('')
 
-  useEffect(() => {
-    supabase.from('workers').select('*').order('name').then(({ data }) => setAllWorkers(data || []))
-  }, [])
+  // Mini modal for new worker
+  const [showNewWorker, setShowNewWorker] = useState(false)
+  const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '' })
+  const [savingWorker, setSavingWorker] = useState(false)
+
+  function refreshWorkers() {
+    return supabase.from('workers').select('*').order('name').then(({ data }) => setAllWorkers(data || []))
+  }
+
+  useEffect(() => { refreshWorkers() }, [])
 
   useEffect(() => {
     if (event) {
@@ -36,11 +43,30 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
 
   function addFromList(w) {
     if (workers.find(ew => ew.name === w.name)) return
-    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: w.name, role: w.role || '', salary: '' }])
+    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: w.name, role: w.role || '', phone: w.phone || '', salary: '' }])
+    setShowPicker(false)
   }
 
-  function addManual() {
-    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: '', role: '', salary: '' }])
+  async function handleAddNewWorker() {
+    if (!newWorker.name.trim()) { alert('נא להזין שם עובד'); return }
+    setSavingWorker(true)
+    // Save to workers table
+    const { data } = await supabase.from('workers')
+      .insert([{ name: newWorker.name.trim(), role: newWorker.role.trim(), phone: newWorker.phone.trim() }])
+      .select().single()
+    // Add to event workers list
+    setWorkers(ws => [...ws, {
+      _id: Date.now() + Math.random(),
+      name: newWorker.name.trim(),
+      role: newWorker.role.trim(),
+      phone: newWorker.phone.trim(),
+      salary: ''
+    }])
+    // Refresh allWorkers list
+    await refreshWorkers()
+    setNewWorker({ name: '', role: '', phone: '' })
+    setShowNewWorker(false)
+    setSavingWorker(false)
   }
 
   function updateWorker(id, field, val) {
@@ -54,18 +80,6 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
   async function handleSave() {
     if (!name.trim()) { alert('נא להזין שם אירוע'); return }
     const cleanWorkers = workers.filter(w => w.name.trim()).map(({ _id, ...w }) => w)
-
-    // Save new workers (not already in list) to workers table
-    const existingNames = new Set(allWorkers.map(w => w.name))
-    const newWorkers = cleanWorkers.filter(w => !existingNames.has(w.name))
-    if (newWorkers.length > 0) {
-      await supabase.from('workers').insert(newWorkers.map(w => ({
-        name: w.name,
-        role: w.role || '',
-        phone: ''
-      })))
-    }
-
     onSave({ name: name.trim(), location: location.trim(), date, time, workers: cleanWorkers })
   }
 
@@ -104,15 +118,16 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
         <div className={styles.workersSectionTitle}>
           <span>עובדים באירוע</span>
           <div className={styles.workerBtns}>
-            <button className={styles.addWorkerBtn} onClick={() => { setShowPicker(p => !p); setPickerSearch('') }}>
+            <button className={styles.addWorkerBtn} onClick={() => { setShowPicker(p => !p); setPickerSearch(''); setShowNewWorker(false) }}>
               <i className="ti ti-users" /> בחר מרשימה
             </button>
-            <button className={styles.addWorkerBtn} onClick={addManual}>
-              <i className="ti ti-plus" /> הוסף ידנית
+            <button className={styles.addWorkerBtn} onClick={() => { setShowNewWorker(p => !p); setShowPicker(false); setNewWorker({ name: '', role: '', phone: '' }) }}>
+              <i className="ti ti-user-plus" /> עובד חדש
             </button>
           </div>
         </div>
 
+        {/* Picker from list */}
         {showPicker && (
           <div className={styles.picker}>
             <input
@@ -126,11 +141,38 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
               {filteredAllWorkers.length === 0 ? (
                 <div className={styles.pickerEmpty}>אין עובדים זמינים</div>
               ) : filteredAllWorkers.map(w => (
-                <div key={w.id} className={styles.pickerItem} onClick={() => { addFromList(w); setShowPicker(false) }}>
+                <div key={w.id} className={styles.pickerItem} onClick={() => addFromList(w)}>
                   <span className={styles.pickerName}>{w.name}</span>
                   <span className={styles.pickerRole}>{w.role || '—'}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* New worker mini form */}
+        {showNewWorker && (
+          <div className={styles.newWorkerBox}>
+            <div className={styles.newWorkerTitle}>עובד חדש — יישמר גם ברשימת העובדים</div>
+            <div className={styles.newWorkerGrid}>
+              <div className={styles.field}>
+                <label>שם מלא *</label>
+                <input value={newWorker.name} onChange={e => setNewWorker(f => ({...f, name: e.target.value}))} placeholder="שם העובד" autoFocus />
+              </div>
+              <div className={styles.field}>
+                <label>תפקיד</label>
+                <input value={newWorker.role} onChange={e => setNewWorker(f => ({...f, role: e.target.value}))} placeholder="תפקיד" />
+              </div>
+              <div className={styles.field}>
+                <label>טלפון</label>
+                <input value={newWorker.phone} onChange={e => setNewWorker(f => ({...f, phone: e.target.value}))} placeholder="050-0000000" />
+              </div>
+            </div>
+            <div className={styles.newWorkerActions}>
+              <button className={styles.cancelBtn} onClick={() => setShowNewWorker(false)}>ביטול</button>
+              <button className={styles.saveBtn} onClick={handleAddNewWorker} disabled={savingWorker}>
+                {savingWorker ? 'שומר...' : 'הוסף לאירוע'}
+              </button>
             </div>
           </div>
         )}
@@ -147,8 +189,8 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
         {workers.map(w => (
           <div key={w._id} className={styles.workerRow}>
             <input value={w.name} onChange={e => updateWorker(w._id, 'name', e.target.value)} placeholder="שם מלא" />
-            <input value={w.role} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
-            <input type="number" value={w.salary} onChange={e => updateWorker(w._id, 'salary', e.target.value)} placeholder="0" min="0" />
+            <input value={w.role || ''} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
+            <input type="number" value={w.salary || ''} onChange={e => updateWorker(w._id, 'salary', e.target.value)} placeholder="0" min="0" />
             <button className={styles.removeBtn} onClick={() => removeWorker(w._id)}>
               <i className="ti ti-x" />
             </button>
