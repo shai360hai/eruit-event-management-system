@@ -54,15 +54,15 @@ export default function WorkersList({ events }) {
     setShowForm(true)
   }
 
-  // Build salary map from events
+  // Build salary map from events, with each entry tagged by its own month
   const salaryMap = {}
   events.forEach(ev => {
+    const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
     const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
     ;(ev.workers || []).forEach(w => {
       if (!w.name) return
-      if (!salaryMap[w.name]) salaryMap[w.name] = { total: 0, entries: [] }
-      salaryMap[w.name].total += parseFloat(w.salary) || 0
-      salaryMap[w.name].entries.push({ date: d, eventName: ev.name || '—', salary: parseFloat(w.salary) || 0, role: w.role || '' })
+      if (!salaryMap[w.name]) salaryMap[w.name] = []
+      salaryMap[w.name].push({ date: d, month: evMonth, eventName: ev.name || '—', salary: parseFloat(w.salary) || 0, role: w.role || '' })
     })
   })
 
@@ -70,6 +70,21 @@ export default function WorkersList({ events }) {
     if (search.trim() && !w.name.includes(search.trim())) return false
     return true
   })
+
+  // Attach filtered (by month) entries + totals, then sort by total descending
+  filtered = filtered.map(w => {
+    const allEntries = salaryMap[w.name] || []
+    const entries = month ? allEntries.filter(e => e.month === parseInt(month)) : allEntries
+    const total = entries.reduce((s, e) => s + e.salary, 0)
+    return { ...w, _entries: entries, _total: total }
+  })
+
+  if (month) {
+    // When a specific month is selected, only show workers who worked that month
+    filtered = filtered.filter(w => w._entries.length > 0)
+  }
+
+  filtered.sort((a, b) => b._total - a._total)
 
   return (
     <div className={styles.wrapper}>
@@ -129,16 +144,11 @@ export default function WorkersList({ events }) {
             <span />
           </div>
 
-          {filtered.map(w => {
-            const sal = salaryMap[w.name]
-            // filter by month
-            const entries = sal ? (month
-              ? sal.entries.filter((_, i) => {
-                  const ev = events.find(e => (e.workers||[]).some(ew => ew.name === w.name))
-                  return ev && new Date(ev.date+'T00:00:00').getMonth()+1 === parseInt(month)
-                })
-              : sal.entries) : []
-            const total = entries.reduce((s, e) => s + e.salary, 0)
+          {filtered.length === 0 ? (
+            <div className={styles.empty}>אין עובדים עם נתונים לחודש הנבחר</div>
+          ) : filtered.map(w => {
+            const entries = w._entries
+            const total = w._total
             const isExp = expanded === w.id
 
             return (
@@ -150,20 +160,20 @@ export default function WorkersList({ events }) {
                   </span>
                   <span className={styles.muted}>{w.role || '—'}</span>
                   <span className={styles.muted}>{w.phone || '—'}</span>
-                  <span>{(sal?.entries || []).length}</span>
-                  <span className={styles.salary}>₪{(sal?.total || 0).toLocaleString('he-IL')}</span>
+                  <span>{entries.length}</span>
+                  <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
                   <span className={styles.rowActions}>
                     <button className={styles.editBtn} style={{display: isAdmin ? '' : 'none'}} onClick={() => openEdit(w)} title="עריכה"><i className="ti ti-pencil" /></button>
                     <button className={styles.deleteBtn} style={{display: isAdmin ? '' : 'none'}} onClick={() => handleDelete(w.id, w.name)} title="מחיקה"><i className="ti ti-trash" /></button>
                   </span>
                 </div>
 
-                {isExp && sal && (
+                {isExp && entries.length > 0 && (
                   <div className={styles.eventsDetail}>
                     <div className={styles.detailHeader}>
                       <span>תאריך</span><span>אירוע</span><span>תפקיד</span><span>שכר</span>
                     </div>
-                    {sal.entries.map((e, i) => (
+                    {entries.map((e, i) => (
                       <div key={i} className={styles.detailRow}>
                         <span className={styles.muted}>{e.date}</span>
                         <span>{e.eventName}</span>
@@ -173,13 +183,13 @@ export default function WorkersList({ events }) {
                     ))}
                     <div className={styles.detailTotal}>
                       <span>סה"כ</span><span /><span />
-                      <span className={styles.salary}>₪{sal.total.toLocaleString('he-IL')}</span>
+                      <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
                     </div>
                   </div>
                 )}
-                {isExp && !sal && (
+                {isExp && entries.length === 0 && (
                   <div className={styles.eventsDetail}>
-                    <div className={styles.noEvents}>לא שובץ לאירועים עדיין</div>
+                    <div className={styles.noEvents}>לא שובץ לאירועים בתקופה זו</div>
                   </div>
                 )}
               </div>
@@ -189,8 +199,8 @@ export default function WorkersList({ events }) {
           <div className={styles.grandTotal}>
             <span>סה"כ ({filtered.length} עובדים)</span>
             <span /><span />
-            <span>{Object.values(salaryMap).reduce((s,v)=>s+v.entries.length,0)}</span>
-            <span className={styles.salary}>₪{Object.values(salaryMap).reduce((s,v)=>s+v.total,0).toLocaleString('he-IL')}</span>
+            <span>{filtered.reduce((s,w)=>s+w._entries.length,0)}</span>
+            <span className={styles.salary}>₪{filtered.reduce((s,w)=>s+w._total,0).toLocaleString('he-IL')}</span>
             <span />
           </div>
         </>

@@ -118,3 +118,15 @@
   .metrics { grid-template-columns: 1fr 1fr; }
   .tableHeader, .tableRow, .totalRow { grid-template-columns: 1fr 80px 60px 90px; font-size: 13px; }
 }
+
+.workerBlockName {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 0 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 2px;
+}
+.workerBlockTotal { font-size: 14px; font-weight: 600; color: var(--text); }

@@ -7,12 +7,17 @@ export default function Summary({ events }) {
   const [month, setMonth] = useState(String(new Date().getMonth() + 1))
 
   const filtered = month
-    ? events.filter(e => e.date && new Date(e.date + 'T00:00:00').getMonth() + 1 === parseInt(month))
+    ? events.filter(e => {
+        if (!e.date) return false
+        return new Date(e.date + 'T00:00:00').getMonth() + 1 === parseInt(month)
+      })
     : events
 
   const totalEvents = filtered.length
-  const totalPay = filtered.reduce((s, e) => s + (e.workers || []).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
+  const totalPay = filtered.reduce((s, e) =>
+    s + (e.workers || []).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
 
+  // Build worker map from filtered events
   const workerMap = {}
   filtered.forEach(e => {
     const d = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('he-IL') : ''
@@ -56,9 +61,12 @@ export default function Summary({ events }) {
       </div>
 
       {sorted.length === 0 ? (
-        <div className={styles.empty}>אין נתונים לתקופה הנבחרת</div>
+        <div className={styles.empty}>
+          אין נתונים ל{month ? MONTHS[parseInt(month)] : 'תקופה זו'}
+        </div>
       ) : (
         <>
+          {/* Worker salary table */}
           <div className={styles.card}>
             <h2 className={styles.cardTitle}>חתך עובדים — שכר ואירועים</h2>
             <div className={styles.tableHeader}>
@@ -83,11 +91,15 @@ export default function Summary({ events }) {
             </div>
           </div>
 
+          {/* Dates per worker */}
           <div className={styles.card} style={{ marginTop: 16 }}>
             <h2 className={styles.cardTitle}>פירוט תאריכים לפי עובד</h2>
             {sorted.map(([name, v]) => (
               <div key={name} className={styles.workerBlock}>
-                <div className={styles.workerBlockName}>{name}</div>
+                <div className={styles.workerBlockName}>
+                  {name}
+                  <span className={styles.workerBlockTotal}>₪{v.total.toLocaleString('he-IL')}</span>
+                </div>
                 {v.dates.map((d, i) => (
                   <div key={i} className={styles.dateRow}>
                     <span className={styles.muted}>{d.date}</span>
@@ -95,10 +107,6 @@ export default function Summary({ events }) {
                     <span className={styles.salary}>₪{d.salary.toLocaleString('he-IL')}</span>
                   </div>
                 ))}
-                <div className={styles.workerTotal}>
-                  <span>סה"כ</span>
-                  <span className={styles.salary}>₪{v.total.toLocaleString('he-IL')}</span>
-                </div>
               </div>
             ))}
           </div>

@@ -3,7 +3,7 @@ import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import styles from './EventForm.module.css'
 
-export default function EventForm({ event, onSave, onDelete, onCancel, loading }) {
+export default function EventForm({ event, prefillDate, onSave, onDelete, onCancel, loading }) {
   const { isAdmin } = useAuth()
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
@@ -26,7 +26,7 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
   useEffect(() => { refreshWorkers() }, [])
 
   useEffect(() => {
-    if (event && !event._prefillDate) {
+    if (event && event.id) {
       setName(event.name || '')
       setLocation(event.location || '')
       setDate(event.date || '')
@@ -35,9 +35,9 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
         ? event.workers.map(w => ({ ...w, _id: w._id || Date.now() + Math.random() }))
         : [])
     } else {
-      setName(''); setLocation(''); setDate(event?._prefillDate || ''); setTime(''); setWorkers([])
+      setName(''); setLocation(''); setDate(prefillDate || ''); setTime(''); setWorkers([])
     }
-  }, [event])
+  }, [event, prefillDate])
 
   const total = workers.reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
 
@@ -90,7 +90,7 @@ export default function EventForm({ event, onSave, onDelete, onCancel, loading }
 
   return (
     <div className={styles.form}>
-      <h2 className={styles.title}>{event ? `עריכה: ${event.name}` : 'אירוע חדש'}</h2>
+      <h2 className={styles.title}>{event && event.id ? `עריכה: ${event.name || '(ללא שם)'}` : 'אירוע חדש'}</h2>
 
       <div className={styles.grid2}>
         <div className={styles.field}>

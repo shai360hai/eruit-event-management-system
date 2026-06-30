@@ -14,6 +14,7 @@ function Shell() {
   const [events, setEvents] = useState([])
   const [view, setView] = useState('calendar')
   const [editEvent, setEditEvent] = useState(null)
+  const [prefillDate, setPrefillDate] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
 
@@ -45,6 +46,7 @@ function Shell() {
       }
       setView('calendar')
       setEditEvent(null)
+      setPrefillDate('')
     } catch (err) {
       alert('שגיאה בשמירה: ' + err.message)
     } finally {
@@ -68,9 +70,9 @@ function Shell() {
   }
 
   function openAdd() { setEditEvent(null); setView('form') }
-  function openAddWithDate(date) { setEditEvent({ _prefillDate: date }); setView('form') }
+  function openAddWithDate(date) { setEditEvent(null); setPrefillDate(date); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
-  function cancel() { setEditEvent(null); setView('calendar') }
+  function cancel() { setEditEvent(null); setPrefillDate(''); setView('calendar') }
 
   const NAV = [
     { id: 'calendar', icon: 'ti-calendar-month', label: 'לוח שנה' },
@@ -119,7 +121,7 @@ function Shell() {
             טוען נתונים...
           </div>
         ) : view === 'form' ? (
-          <EventForm event={editEvent} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
+          <EventForm event={editEvent} prefillDate={prefillDate} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (
           <Calendar events={events} onEventClick={openEdit} onAddEvent={openAddWithDate} />
         ) : view === 'list' ? (
