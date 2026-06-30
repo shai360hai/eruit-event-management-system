@@ -80,12 +80,8 @@ export default function WorkersList({ events }) {
     return { ...w, _entries: entries, _total: total }
   })
 
-  if (month) {
-    // When a specific month is selected, only show workers who worked that month
-    filtered = filtered.filter(w => w._entries.length > 0)
-  }
-
-  filtered.sort((a, b) => b._total - a._total)
+  // Always show the full roster — sort by relevant-month total first, then alphabetically for ties (e.g. zero-salary workers)
+  filtered.sort((a, b) => b._total - a._total || a.name.localeCompare(b.name, 'he'))
 
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
 
@@ -94,8 +90,10 @@ export default function WorkersList({ events }) {
   }
 
   function handleExportAll() {
-    const data = filtered.map(w => ({ name: w.name, role: w.role, count: w._entries.length, total: w._total }))
-    const grand = filtered.reduce((s, w) => s + w._total, 0)
+    // PDF should only include workers who actually have entries (avoid a list full of zeros)
+    const active = filtered.filter(w => w._entries.length > 0)
+    const data = active.map(w => ({ name: w.name, role: w.role, count: w._entries.length, total: w._total }))
+    const grand = active.reduce((s, w) => s + w._total, 0)
     exportMonthlyAllWorkersPdf(data, monthLabel, grand)
   }
 
@@ -160,9 +158,7 @@ export default function WorkersList({ events }) {
             <span />
           </div>
 
-          {filtered.length === 0 ? (
-            <div className={styles.empty}>אין עובדים עם נתונים לחודש הנבחר</div>
-          ) : filtered.map(w => {
+          {filtered.map(w => {
             const entries = w._entries
             const total = w._total
             const isExp = expanded === w.id
@@ -206,7 +202,9 @@ export default function WorkersList({ events }) {
                 )}
                 {isExp && entries.length === 0 && (
                   <div className={styles.eventsDetail}>
-                    <div className={styles.noEvents}>לא שובץ לאירועים בתקופה זו</div>
+                    <div className={styles.noEvents}>
+                      {month ? `לא שובץ לאירועים ב${monthLabel}` : 'לא שובץ לאירועים עדיין'}
+                    </div>
                   </div>
                 )}
               </div>
