@@ -8,6 +8,7 @@ export async function getEvents() {
 
   if (error) throw new Error(error.message)
 
+  // parse workers JSON string back to array
   return (data || []).map(ev => ({
     ...ev,
     workers: typeof ev.workers === 'string' ? JSON.parse(ev.workers) : (ev.workers || [])

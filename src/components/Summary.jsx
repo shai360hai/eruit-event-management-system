@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import styles from './Summary.module.css'
+import { exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
@@ -34,15 +35,26 @@ export default function Summary({ events }) {
   const sorted = Object.entries(workerMap).sort((a, b) => b[1].total - a[1].total)
   const grandTotal = sorted.reduce((s, [, v]) => s + v.total, 0)
   const workerCount = sorted.length
+  const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
+
+  function handleExportAll() {
+    const data = sorted.map(([name, v]) => ({ name, role: v.role, count: v.count, total: v.total }))
+    exportMonthlyAllWorkersPdf(data, monthLabel, grandTotal)
+  }
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>סיכום חודשי</h1>
-        <select value={month} onChange={e => setMonth(e.target.value)} className={styles.monthSelect}>
-          <option value="">כל החודשים</option>
-          {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-        </select>
+        <div className={styles.headerActions}>
+          <select value={month} onChange={e => setMonth(e.target.value)} className={styles.monthSelect}>
+            <option value="">כל החודשים</option>
+            {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+          </select>
+          <button className={styles.exportBtn} onClick={handleExportAll} disabled={sorted.length === 0}>
+            <i className="ti ti-file-type-pdf" /> ייצוא PDF
+          </button>
+        </div>
       </div>
 
       <div className={styles.metrics}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import styles from './WorkersList.module.css'
+import { exportWorkerPdf, exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
@@ -86,6 +87,18 @@ export default function WorkersList({ events }) {
 
   filtered.sort((a, b) => b._total - a._total)
 
+  const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
+
+  function handleExportWorker(w) {
+    exportWorkerPdf(w, w._entries, w._total, monthLabel)
+  }
+
+  function handleExportAll() {
+    const data = filtered.map(w => ({ name: w.name, role: w.role, count: w._entries.length, total: w._total }))
+    const grand = filtered.reduce((s, w) => s + w._total, 0)
+    exportMonthlyAllWorkersPdf(data, monthLabel, grand)
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -96,6 +109,9 @@ export default function WorkersList({ events }) {
             <option value="">כל החודשים</option>
             {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>
+          <button className={styles.exportBtn} onClick={handleExportAll}>
+            <i className="ti ti-file-type-pdf" /> ייצוא PDF
+          </button>
           <button className={styles.addBtn} onClick={() => { setForm({ name:'', role:'', phone:'' }); setEditId(null); setShowForm(true) }} style={{display: isAdmin ? '' : 'none'}}>
             <i className="ti ti-plus" /> עובד חדש
           </button>
@@ -163,6 +179,7 @@ export default function WorkersList({ events }) {
                   <span>{entries.length}</span>
                   <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
                   <span className={styles.rowActions}>
+                    <button className={styles.pdfBtn} onClick={(e) => { e.stopPropagation(); handleExportWorker(w) }} title="ייצוא PDF"><i className="ti ti-file-type-pdf" /></button>
                     <button className={styles.editBtn} style={{display: isAdmin ? '' : 'none'}} onClick={() => openEdit(w)} title="עריכה"><i className="ti ti-pencil" /></button>
                     <button className={styles.deleteBtn} style={{display: isAdmin ? '' : 'none'}} onClick={() => handleDelete(w.id, w.name)} title="מחיקה"><i className="ti ti-trash" /></button>
                   </span>
