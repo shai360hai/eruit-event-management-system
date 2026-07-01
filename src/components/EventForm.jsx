@@ -43,7 +43,7 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
 
   function addFromList(w) {
     if (workers.find(ew => ew.name === w.name)) return
-    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: w.name, role: w.role || '', phone: w.phone || '', salary: '' }])
+    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: w.name, role: w.role || '', phone: w.phone || '', salary: '', paid: false }])
     setShowPicker(false)
   }
 
@@ -60,7 +60,8 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
       name: newWorker.name.trim(),
       role: newWorker.role.trim(),
       phone: newWorker.phone.trim(),
-      salary: ''
+      salary: '',
+      paid: false
     }])
     // Refresh allWorkers list
     await refreshWorkers()
@@ -182,6 +183,7 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
             <span>שם עובד</span>
             <span>תפקיד</span>
             <span>שכר ₪</span>
+            <span>שולם</span>
             <span />
           </div>
         )}
@@ -191,6 +193,9 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
             <input value={w.name} onChange={e => updateWorker(w._id, 'name', e.target.value)} placeholder="שם מלא" />
             <input value={w.role || ''} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
             <input type="number" value={w.salary || ''} onChange={e => updateWorker(w._id, 'salary', e.target.value)} placeholder="0" min="0" />
+            <label className={styles.paidCheck} title="שולם">
+              <input type="checkbox" checked={!!w.paid} onChange={e => updateWorker(w._id, 'paid', e.target.checked)} />
+            </label>
             <button className={styles.removeBtn} onClick={() => removeWorker(w._id)}>
               <i className="ti ti-x" />
             </button>

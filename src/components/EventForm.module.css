@@ -53,7 +53,7 @@
 
 .workerHeader {
   display: grid;
-  grid-template-columns: 1fr 1fr 120px 100px 36px;
+  grid-template-columns: 1fr 1fr 100px 60px 36px;
   gap: 8px;
   padding: 0 0 6px;
   font-size: 12px;
@@ -67,7 +67,7 @@
 
 .workerRow {
   display: grid;
-  grid-template-columns: 1fr 1fr 120px 100px 36px;
+  grid-template-columns: 1fr 1fr 100px 60px 36px;
   gap: 8px;
   align-items: center;
   margin-bottom: 7px;
@@ -140,8 +140,8 @@
 
 @media (max-width: 600px) {
   .grid2 { grid-template-columns: 1fr; }
-  .workerRow { grid-template-columns: 1fr 1fr 80px 32px; }
-  .workerHeader { grid-template-columns: 1fr 1fr 80px 32px; }
+  .workerRow { grid-template-columns: 1fr 1fr 70px 44px 32px; }
+  .workerHeader { grid-template-columns: 1fr 1fr 70px 44px 32px; }
 }
 
 .workerBtns { display: flex; gap: 6px; }
@@ -206,4 +206,17 @@
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.paidCheck {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+}
+.paidCheck input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-bg);
+  cursor: pointer;
 }

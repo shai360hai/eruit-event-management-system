@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
 import styles from './WorkersList.module.css'
 import { exportWorkerPdf, exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
+import { updateEvent } from '../api'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
@@ -17,6 +18,7 @@ export default function WorkersList({ events }) {
   const [form, setForm] = useState({ name: '', role: '', phone: '' })
   const [saving, setSaving] = useState(false)
   const [editId, setEditId] = useState(null)
+  const [unpaidOnly, setUnpaidOnly] = useState(false)
 
   useEffect(() => { fetchWorkers() }, [])
 
@@ -60,10 +62,14 @@ export default function WorkersList({ events }) {
   events.forEach(ev => {
     const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
     const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
-    ;(ev.workers || []).forEach(w => {
+    ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
       if (!salaryMap[w.name]) salaryMap[w.name] = []
-      salaryMap[w.name].push({ date: d, month: evMonth, eventName: ev.name || '—', salary: parseFloat(w.salary) || 0, role: w.role || '' })
+      salaryMap[w.name].push({
+        date: d, month: evMonth, eventName: ev.name || '—',
+        salary: parseFloat(w.salary) || 0, role: w.role || '',
+        paid: !!w.paid, eventId: ev.id, workerIdx: idx
+      })
     })
   })
 
@@ -77,11 +83,29 @@ export default function WorkersList({ events }) {
     const allEntries = salaryMap[w.name] || []
     const entries = month ? allEntries.filter(e => e.month === parseInt(month)) : allEntries
     const total = entries.reduce((s, e) => s + e.salary, 0)
-    return { ...w, _entries: entries, _total: total }
+    const owed = entries.filter(e => !e.paid).reduce((s, e) => s + e.salary, 0)
+    return { ...w, _entries: entries, _total: total, _owed: owed }
   })
 
-  // Always show the full roster — sort by relevant-month total first, then alphabetically for ties (e.g. zero-salary workers)
-  filtered.sort((a, b) => b._total - a._total || a.name.localeCompare(b.name, 'he'))
+  if (unpaidOnly) {
+    filtered = filtered.filter(w => w._owed > 0)
+  }
+
+  // Always show the full roster — sort by amount owed first (unpaid debts surface to the top), then total
+  filtered.sort((a, b) => b._owed - a._owed || b._total - a._total || a.name.localeCompare(b.name, 'he'))
+
+  const totalOwedAll = filtered.reduce((s, w) => s + w._owed, 0)
+
+  async function togglePaid(entry) {
+    const ev = events.find(e => e.id === entry.eventId)
+    if (!ev) return
+    const updatedWorkers = (ev.workers || []).map((w, idx) =>
+      idx === entry.workerIdx ? { ...w, paid: !w.paid } : w
+    )
+    await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
+    // Optimistic local mutation so the UI reflects instantly without a full refetch
+    ev.workers = updatedWorkers
+  }
 
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
 
@@ -107,6 +131,12 @@ export default function WorkersList({ events }) {
             <option value="">כל החודשים</option>
             {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>
+          <button
+            className={`${styles.unpaidToggle} ${unpaidOnly ? styles.unpaidToggleActive : ''}`}
+            onClick={() => setUnpaidOnly(u => !u)}
+          >
+            <i className="ti ti-cash" /> רק חוב פתוח
+          </button>
           <button className={styles.exportBtn} onClick={handleExportAll}>
             <i className="ti ti-file-type-pdf" /> ייצוא PDF
           </button>
@@ -115,6 +145,13 @@ export default function WorkersList({ events }) {
           </button>
         </div>
       </div>
+
+      {totalOwedAll > 0 && (
+        <div className={styles.owedBanner}>
+          <i className="ti ti-alert-triangle" />
+          <span>סה"כ חוב פתוח לעובדים{month ? ` ב${monthLabel}` : ''}: <strong>₪{totalOwedAll.toLocaleString('he-IL')}</strong></span>
+        </div>
+      )}
 
       {showForm && (
         <div className={styles.formCard}>
@@ -155,6 +192,7 @@ export default function WorkersList({ events }) {
             <span>טלפון</span>
             <span>אירועים</span>
             <span>סה"כ שכר</span>
+            <span>חוב</span>
             <span />
           </div>
 
@@ -174,6 +212,9 @@ export default function WorkersList({ events }) {
                   <span className={styles.muted}>{w.phone || '—'}</span>
                   <span>{entries.length}</span>
                   <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
+                  <span className={w._owed > 0 ? styles.owedAmount : styles.paidAmount}>
+                    {w._owed > 0 ? `₪${w._owed.toLocaleString('he-IL')}` : <i className="ti ti-check" />}
+                  </span>
                   <span className={styles.rowActions}>
                     <button className={styles.pdfBtn} onClick={(e) => { e.stopPropagation(); handleExportWorker(w) }} title="ייצוא PDF"><i className="ti ti-file-type-pdf" /></button>
                     <button className={styles.editBtn} style={{display: isAdmin ? '' : 'none'}} onClick={() => openEdit(w)} title="עריכה"><i className="ti ti-pencil" /></button>
@@ -184,19 +225,29 @@ export default function WorkersList({ events }) {
                 {isExp && entries.length > 0 && (
                   <div className={styles.eventsDetail}>
                     <div className={styles.detailHeader}>
-                      <span>תאריך</span><span>אירוע</span><span>תפקיד</span><span>שכר</span>
+                      <span>תאריך</span><span>אירוע</span><span>תפקיד</span><span>שכר</span><span>שולם</span>
                     </div>
                     {entries.map((e, i) => (
-                      <div key={i} className={styles.detailRow}>
+                      <div key={i} className={`${styles.detailRow} ${e.paid ? '' : styles.detailRowUnpaid}`}>
                         <span className={styles.muted}>{e.date}</span>
                         <span>{e.eventName}</span>
                         <span className={styles.muted}>{e.role || '—'}</span>
                         <span className={styles.salary}>₪{e.salary.toLocaleString('he-IL')}</span>
+                        <span className={styles.paidToggleCell}>
+                          {isAdmin ? (
+                            <label className={styles.paidToggle}>
+                              <input type="checkbox" checked={e.paid} onChange={() => togglePaid(e)} />
+                            </label>
+                          ) : (
+                            e.paid ? <i className="ti ti-check" style={{color: '#3b6d11'}} /> : <i className="ti ti-clock" style={{color: '#c0392b'}} />
+                          )}
+                        </span>
                       </div>
                     ))}
                     <div className={styles.detailTotal}>
                       <span>סה"כ</span><span /><span />
                       <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
+                      <span />
                     </div>
                   </div>
                 )}
@@ -216,6 +267,7 @@ export default function WorkersList({ events }) {
             <span /><span />
             <span>{filtered.reduce((s,w)=>s+w._entries.length,0)}</span>
             <span className={styles.salary}>₪{filtered.reduce((s,w)=>s+w._total,0).toLocaleString('he-IL')}</span>
+            <span className={styles.owedAmount}>₪{totalOwedAll.toLocaleString('he-IL')}</span>
             <span />
           </div>
         </>

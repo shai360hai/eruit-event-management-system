@@ -6,6 +6,7 @@ import Summary from './components/Summary'
 import Calendar from './components/Calendar'
 import WorkersList from './components/WorkersList'
 import Login from './components/Login'
+import Payments from './components/Payments'
 import { getEvents, createEvent, updateEvent, deleteEvent } from './api'
 import styles from './App.module.css'
 
@@ -17,6 +18,7 @@ function Shell() {
   const [prefillDate, setPrefillDate] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [unpaidTotal, setUnpaidTotal] = useState(0)
 
   useEffect(() => {
     if (!user) return
@@ -24,6 +26,14 @@ function Shell() {
       .then(setEvents)
       .catch(() => setEvents([]))
       .finally(() => setFetching(false))
+
+    // Fetch unpaid total for badge
+    import('./utils/payments').then(({ getAllPayments }) => {
+      getAllPayments().then(ps => {
+        const total = ps.filter(p => !p.paid).reduce((s, p) => s + (p.amount || 0), 0)
+        setUnpaidTotal(total)
+      }).catch(() => {})
+    })
   }, [user])
 
   if (authLoading) return (
@@ -79,6 +89,7 @@ function Shell() {
     { id: 'list',     icon: 'ti-list',            label: 'אירועים' },
     { id: 'workers',  icon: 'ti-users',            label: 'עובדים' },
     { id: 'summary',  icon: 'ti-chart-bar',        label: 'סיכום' },
+    { id: 'payments', icon: 'ti-wallet',            label: 'תשלומים' },
   ]
 
   return (
@@ -95,6 +106,9 @@ function Shell() {
               onClick={() => { setView(n.id); setEditEvent(null) }}
             >
               <i className={`ti ${n.icon}`} /> {n.label}
+              {n.id === 'payments' && unpaidTotal > 0 && (
+                <span className={styles.unpaidBadge}>₪{unpaidTotal.toLocaleString('he-IL')}</span>
+              )}
             </button>
           ))}
         </div>
@@ -128,6 +142,8 @@ function Shell() {
           <EventsList events={events} onEdit={openEdit} onAdd={openAdd} />
         ) : view === 'workers' ? (
           <WorkersList events={events} />
+        ) : view === 'payments' ? (
+          <Payments />
         ) : (
           <Summary events={events} />
         )}
