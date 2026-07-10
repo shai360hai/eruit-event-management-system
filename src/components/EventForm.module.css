@@ -220,3 +220,32 @@
   accent-color: var(--accent-bg);
   cursor: pointer;
 }
+
+.pickerLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pickerSalary {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 10px;
+  margin-right: auto;
+}
+
+/* 4-column new worker grid */
+.newWorkerGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+@media (max-width: 640px) {
+  .newWorkerGrid { grid-template-columns: 1fr 1fr; }
+}

@@ -15,7 +15,7 @@ export default function WorkersList({ events }) {
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState(null)
   const [showForm, setShowForm] = useState(false)
-  const [form, setForm] = useState({ name: '', role: '', phone: '' })
+  const [form, setForm] = useState({ name: '', role: '', phone: '', default_salary: '' })
   const [saving, setSaving] = useState(false)
   const [editId, setEditId] = useState(null)
   const [unpaidOnly, setUnpaidOnly] = useState(false)
@@ -32,13 +32,19 @@ export default function WorkersList({ events }) {
   async function handleSave() {
     if (!form.name.trim()) { alert('נא להזין שם עובד'); return }
     setSaving(true)
+    const payload = {
+      name: form.name.trim(),
+      role: form.role.trim(),
+      phone: form.phone.trim(),
+      default_salary: parseFloat(form.default_salary) || 0
+    }
     if (editId) {
-      await supabase.from('workers').update({ name: form.name.trim(), role: form.role.trim(), phone: form.phone.trim() }).eq('id', editId)
+      await supabase.from('workers').update(payload).eq('id', editId)
     } else {
-      await supabase.from('workers').insert([{ name: form.name.trim(), role: form.role.trim(), phone: form.phone.trim() }])
+      await supabase.from('workers').insert([payload])
     }
     await fetchWorkers()
-    setForm({ name: '', role: '', phone: '' })
+    setForm({ name: '', role: '', phone: '', default_salary: '' })
     setShowForm(false)
     setEditId(null)
     setSaving(false)
@@ -52,12 +58,12 @@ export default function WorkersList({ events }) {
   }
 
   function openEdit(w) {
-    setForm({ name: w.name, role: w.role || '', phone: w.phone || '' })
+    setForm({ name: w.name, role: w.role || '', phone: w.phone || '', default_salary: w.default_salary || '' })
     setEditId(w.id)
     setShowForm(true)
   }
 
-  // Build salary map from events, with each entry tagged by its own month
+  // Build salary map from events
   const salaryMap = {}
   events.forEach(ev => {
     const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
@@ -78,7 +84,6 @@ export default function WorkersList({ events }) {
     return true
   })
 
-  // Attach filtered (by month) entries + totals, then sort by total descending
   filtered = filtered.map(w => {
     const allEntries = salaryMap[w.name] || []
     const entries = month ? allEntries.filter(e => e.month === parseInt(month)) : allEntries
@@ -87,11 +92,8 @@ export default function WorkersList({ events }) {
     return { ...w, _entries: entries, _total: total, _owed: owed }
   })
 
-  if (unpaidOnly) {
-    filtered = filtered.filter(w => w._owed > 0)
-  }
+  if (unpaidOnly) filtered = filtered.filter(w => w._owed > 0)
 
-  // Always show the full roster — sort by amount owed first (unpaid debts surface to the top), then total
   filtered.sort((a, b) => b._owed - a._owed || b._total - a._total || a.name.localeCompare(b.name, 'he'))
 
   const totalOwedAll = filtered.reduce((s, w) => s + w._owed, 0)
@@ -103,7 +105,6 @@ export default function WorkersList({ events }) {
       idx === entry.workerIdx ? { ...w, paid: !w.paid } : w
     )
     await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
-    // Optimistic local mutation so the UI reflects instantly without a full refetch
     ev.workers = updatedWorkers
   }
 
@@ -114,7 +115,6 @@ export default function WorkersList({ events }) {
   }
 
   function handleExportAll() {
-    // PDF should only include workers who actually have entries (avoid a list full of zeros)
     const active = filtered.filter(w => w._entries.length > 0)
     const data = active.map(w => ({ name: w.name, role: w.role, count: w._entries.length, total: w._total }))
     const grand = active.reduce((s, w) => s + w._total, 0)
@@ -140,7 +140,7 @@ export default function WorkersList({ events }) {
           <button className={styles.exportBtn} onClick={handleExportAll}>
             <i className="ti ti-file-type-pdf" /> ייצוא PDF
           </button>
-          <button className={styles.addBtn} onClick={() => { setForm({ name:'', role:'', phone:'' }); setEditId(null); setShowForm(true) }} style={{display: isAdmin ? '' : 'none'}}>
+          <button className={styles.addBtn} onClick={() => { setForm({ name:'', role:'', phone:'', default_salary:'' }); setEditId(null); setShowForm(true) }} style={{display: isAdmin ? '' : 'none'}}>
             <i className="ti ti-plus" /> עובד חדש
           </button>
         </div>
@@ -169,6 +169,16 @@ export default function WorkersList({ events }) {
               <label>טלפון</label>
               <input value={form.phone} onChange={e => setForm(f => ({...f, phone: e.target.value}))} placeholder="050-0000000" />
             </div>
+            <div className={styles.field}>
+              <label>שכר ברירת מחדל ₪</label>
+              <input
+                type="number"
+                min="0"
+                value={form.default_salary}
+                onChange={e => setForm(f => ({...f, default_salary: e.target.value}))}
+                placeholder="0"
+              />
+            </div>
           </div>
           <div className={styles.formActions}>
             <button className={styles.cancelBtn} onClick={() => { setShowForm(false); setEditId(null) }}>ביטול</button>
@@ -190,6 +200,7 @@ export default function WorkersList({ events }) {
             <span>שם עובד</span>
             <span>תפקיד</span>
             <span>טלפון</span>
+            <span>שכר ברירת מחדל</span>
             <span>אירועים</span>
             <span>סה"כ שכר</span>
             <span>חוב</span>
@@ -210,6 +221,9 @@ export default function WorkersList({ events }) {
                   </span>
                   <span className={styles.muted}>{w.role || '—'}</span>
                   <span className={styles.muted}>{w.phone || '—'}</span>
+                  <span className={styles.muted}>
+                    {w.default_salary ? `₪${Number(w.default_salary).toLocaleString('he-IL')}` : '—'}
+                  </span>
                   <span>{entries.length}</span>
                   <span className={styles.salary}>₪{total.toLocaleString('he-IL')}</span>
                   <span className={w._owed > 0 ? styles.owedAmount : styles.paidAmount}>
@@ -264,7 +278,7 @@ export default function WorkersList({ events }) {
 
           <div className={styles.grandTotal}>
             <span>סה"כ ({filtered.length} עובדים)</span>
-            <span /><span />
+            <span /><span /><span />
             <span>{filtered.reduce((s,w)=>s+w._entries.length,0)}</span>
             <span className={styles.salary}>₪{filtered.reduce((s,w)=>s+w._total,0).toLocaleString('he-IL')}</span>
             <span className={styles.owedAmount}>₪{totalOwedAll.toLocaleString('he-IL')}</span>

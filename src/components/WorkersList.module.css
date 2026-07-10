@@ -197,3 +197,22 @@
   .tableHeader, .workerRow, .grandTotal { grid-template-columns: 1fr 70px 0 55px 85px 96px !important; }
   .tableHeader span:nth-child(3), .workerRow span:nth-child(3), .grandTotal span:nth-child(3) { display: none; }
 }
+.tableHeader { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
+.workerRow   { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
+.grandTotal  { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
+
+/* 4-column form grid */
+.formGrid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
+
+@media (max-width: 640px) {
+  .tableHeader, .workerRow, .grandTotal {
+    grid-template-columns: 1fr 0 0 0 55px 85px 80px 96px !important;
+  }
+  .tableHeader span:nth-child(2),
+  .tableHeader span:nth-child(3),
+  .tableHeader span:nth-child(4),
+  .workerRow span:nth-child(2),
+  .workerRow span:nth-child(3),
+  .workerRow span:nth-child(4) { display: none; }
+  .formGrid { grid-template-columns: 1fr 1fr !important; }
+}

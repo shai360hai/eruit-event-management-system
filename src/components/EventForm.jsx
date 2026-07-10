@@ -14,9 +14,8 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
   const [showPicker, setShowPicker] = useState(false)
   const [pickerSearch, setPickerSearch] = useState('')
 
-  // Mini modal for new worker
   const [showNewWorker, setShowNewWorker] = useState(false)
-  const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '' })
+  const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '', default_salary: '' })
   const [savingWorker, setSavingWorker] = useState(false)
 
   function refreshWorkers() {
@@ -43,29 +42,39 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
 
   function addFromList(w) {
     if (workers.find(ew => ew.name === w.name)) return
-    setWorkers(ws => [...ws, { _id: Date.now() + Math.random(), name: w.name, role: w.role || '', phone: w.phone || '', salary: '', paid: false }])
+    setWorkers(ws => [...ws, {
+      _id: Date.now() + Math.random(),
+      name: w.name,
+      role: w.role || '',
+      phone: w.phone || '',
+      // auto-fill default salary — editable per event
+      salary: w.default_salary ? String(w.default_salary) : '',
+      paid: false
+    }])
     setShowPicker(false)
   }
 
   async function handleAddNewWorker() {
     if (!newWorker.name.trim()) { alert('נא להזין שם עובד'); return }
     setSavingWorker(true)
-    // Save to workers table
-    const { data } = await supabase.from('workers')
-      .insert([{ name: newWorker.name.trim(), role: newWorker.role.trim(), phone: newWorker.phone.trim() }])
+    await supabase.from('workers')
+      .insert([{
+        name: newWorker.name.trim(),
+        role: newWorker.role.trim(),
+        phone: newWorker.phone.trim(),
+        default_salary: parseFloat(newWorker.default_salary) || 0
+      }])
       .select().single()
-    // Add to event workers list
     setWorkers(ws => [...ws, {
       _id: Date.now() + Math.random(),
       name: newWorker.name.trim(),
       role: newWorker.role.trim(),
       phone: newWorker.phone.trim(),
-      salary: '',
+      salary: newWorker.default_salary || '',
       paid: false
     }])
-    // Refresh allWorkers list
     await refreshWorkers()
-    setNewWorker({ name: '', role: '', phone: '' })
+    setNewWorker({ name: '', role: '', phone: '', default_salary: '' })
     setShowNewWorker(false)
     setSavingWorker(false)
   }
@@ -122,13 +131,12 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
             <button className={styles.addWorkerBtn} onClick={() => { setShowPicker(p => !p); setPickerSearch(''); setShowNewWorker(false) }}>
               <i className="ti ti-users" /> בחר מרשימה
             </button>
-            <button className={styles.addWorkerBtn} onClick={() => { setShowNewWorker(p => !p); setShowPicker(false); setNewWorker({ name: '', role: '', phone: '' }) }}>
+            <button className={styles.addWorkerBtn} onClick={() => { setShowNewWorker(p => !p); setShowPicker(false); setNewWorker({ name: '', role: '', phone: '', default_salary: '' }) }}>
               <i className="ti ti-user-plus" /> עובד חדש
             </button>
           </div>
         </div>
 
-        {/* Picker from list */}
         {showPicker && (
           <div className={styles.picker}>
             <input
@@ -143,15 +151,19 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
                 <div className={styles.pickerEmpty}>אין עובדים זמינים</div>
               ) : filteredAllWorkers.map(w => (
                 <div key={w.id} className={styles.pickerItem} onClick={() => addFromList(w)}>
-                  <span className={styles.pickerName}>{w.name}</span>
-                  <span className={styles.pickerRole}>{w.role || '—'}</span>
+                  <div className={styles.pickerLeft}>
+                    <span className={styles.pickerName}>{w.name}</span>
+                    <span className={styles.pickerRole}>{w.role || '—'}</span>
+                  </div>
+                  {w.default_salary > 0 && (
+                    <span className={styles.pickerSalary}>₪{Number(w.default_salary).toLocaleString('he-IL')}</span>
+                  )}
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* New worker mini form */}
         {showNewWorker && (
           <div className={styles.newWorkerBox}>
             <div className={styles.newWorkerTitle}>עובד חדש — יישמר גם ברשימת העובדים</div>
@@ -167,6 +179,10 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
               <div className={styles.field}>
                 <label>טלפון</label>
                 <input value={newWorker.phone} onChange={e => setNewWorker(f => ({...f, phone: e.target.value}))} placeholder="050-0000000" />
+              </div>
+              <div className={styles.field}>
+                <label>שכר ברירת מחדל ₪</label>
+                <input type="number" min="0" value={newWorker.default_salary} onChange={e => setNewWorker(f => ({...f, default_salary: e.target.value}))} placeholder="0" />
               </div>
             </div>
             <div className={styles.newWorkerActions}>
@@ -192,7 +208,13 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
           <div key={w._id} className={styles.workerRow}>
             <input value={w.name} onChange={e => updateWorker(w._id, 'name', e.target.value)} placeholder="שם מלא" />
             <input value={w.role || ''} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
-            <input type="number" value={w.salary || ''} onChange={e => updateWorker(w._id, 'salary', e.target.value)} placeholder="0" min="0" />
+            <input
+              type="number"
+              value={w.salary || ''}
+              onChange={e => updateWorker(w._id, 'salary', e.target.value)}
+              placeholder="0"
+              min="0"
+            />
             <label className={styles.paidCheck} title="שולם">
               <input type="checkbox" checked={!!w.paid} onChange={e => updateWorker(w._id, 'paid', e.target.checked)} />
             </label>
@@ -210,7 +232,7 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
 
       <div className={styles.actions}>
         <div>
-          {event && isAdmin && (
+          {event && event.id && isAdmin && (
             <button className={styles.deleteBtn} onClick={onDelete} disabled={loading}>
               <i className="ti ti-trash" /> מחק אירוע
             </button>
