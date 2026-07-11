@@ -1,0 +1,116 @@
+.wrapper { padding: 0; }
+
+.greeting { margin-bottom: 1.5rem; }
+.title { font-size: 24px; font-weight: 700; color: var(--text); }
+.sub { font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.metric {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: box-shadow .15s, border-color .15s;
+}
+.metric:hover { border-color: var(--border-strong); box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+
+.metricIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.metricVal { font-size: 20px; font-weight: 700; color: var(--text); }
+.metricLbl { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.cardTitle { font-size: 14px; font-weight: 600; color: var(--text); }
+.cardLink { background: none; border: none; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 0; }
+.cardLink:hover { color: var(--text); }
+.cardEmpty { font-size: 13px; color: var(--text-hint); padding: 8px 0; }
+
+/* Upcoming events */
+.upcomingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+.upcomingRow:last-child { border-bottom: none; }
+
+.upcomingName { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 3px; }
+.upcomingMeta { display: flex; gap: 10px; font-size: 12px; color: var(--text-secondary); }
+.upcomingMeta span { display: flex; align-items: center; gap: 3px; }
+
+.upcomingRight { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
+.dayLabel { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
+.dayLabelToday { background: #e8eeff; color: #2a3fa0; }
+.upcomingTotal { font-size: 13px; font-weight: 600; color: var(--text); }
+
+/* Worker rankings */
+.workerRankRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.workerRankRow:last-child { border-bottom: none; }
+
+.rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.rankName { font-size: 14px; font-weight: 500; color: var(--text); }
+.rankSub { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.rankSalary { font-size: 14px; font-weight: 600; color: var(--text); margin-right: auto; white-space: nowrap; }
+
+@media (max-width: 640px) {
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .cols { grid-template-columns: 1fr; }
+  .metricVal { font-size: 17px; }
+}

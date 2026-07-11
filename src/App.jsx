@@ -7,13 +7,14 @@ import Calendar from './components/Calendar'
 import WorkersList from './components/WorkersList'
 import Login from './components/Login'
 import Payments from './components/Payments'
+import Dashboard from './components/Dashboard'
 import { getEvents, createEvent, updateEvent, deleteEvent } from './api'
 import styles from './App.module.css'
 
 function Shell() {
   const { user, isAdmin, signOut, loading: authLoading } = useAuth()
   const [events, setEvents] = useState([])
-  const [view, setView] = useState('calendar')
+  const [view, setView] = useState('dashboard')
   const [editEvent, setEditEvent] = useState(null)
   const [prefillDate, setPrefillDate] = useState('')
   const [loading, setLoading] = useState(false)
@@ -54,7 +55,7 @@ function Shell() {
         const created = await createEvent(data)
         setEvents(es => [...es, created])
       }
-      setView('calendar')
+      setView('dashboard')
       setEditEvent(null)
       setPrefillDate('')
     } catch (err) {
@@ -70,7 +71,7 @@ function Shell() {
     try {
       await deleteEvent(editEvent.id)
       setEvents(es => es.filter(e => e.id !== editEvent.id))
-      setView('calendar')
+      setView('dashboard')
       setEditEvent(null)
     } catch (err) {
       alert('שגיאה במחיקה: ' + err.message)
@@ -82,9 +83,10 @@ function Shell() {
   function openAdd() { setEditEvent(null); setView('form') }
   function openAddWithDate(date) { setEditEvent(null); setPrefillDate(date); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
-  function cancel() { setEditEvent(null); setPrefillDate(''); setView('calendar') }
+  function cancel() { setEditEvent(null); setPrefillDate(''); setView('dashboard') }
 
   const NAV = [
+    { id: 'dashboard', icon: 'ti-home', label: 'בית' },
     { id: 'calendar', icon: 'ti-calendar-month', label: 'לוח שנה' },
     { id: 'list',     icon: 'ti-list',            label: 'אירועים' },
     { id: 'workers',  icon: 'ti-users',            label: 'עובדים' },
@@ -134,6 +136,8 @@ function Shell() {
             <i className="ti ti-loader-2" style={{ fontSize: 28, display: 'block', marginBottom: 8 }} />
             טוען נתונים...
           </div>
+        ) : view === 'dashboard' ? (
+          <Dashboard events={events} onNavigate={v => { setView(v); setEditEvent(null) }} />
         ) : view === 'form' ? (
           <EventForm event={editEvent} prefillDate={prefillDate} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (

@@ -74,11 +74,11 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
             >
               <span className={styles.dayNum}>{day}</span>
               {evs.length > 0 && (
-                <div className={styles.dots}>
-                  {evs.slice(0, 3).map((ev, idx) => (
-                    <span key={idx} className={styles.dot} title={ev.name} />
+                <div className={styles.eventChips}>
+                  {evs.slice(0, 2).map((ev, idx) => (
+                    <span key={idx} className={styles.eventChip} title={ev.name}>{ev.name}</span>
                   ))}
-                  {evs.length > 3 && <span className={styles.dotMore}>+{evs.length - 3}</span>}
+                  {evs.length > 2 && <span className={styles.dotMore}>+{evs.length - 2}</span>}
                 </div>
               )}
             </div>

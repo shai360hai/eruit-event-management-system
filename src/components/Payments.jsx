@@ -25,6 +25,18 @@ export default function Payments() {
 
   useEffect(() => { fetchPayments() }, [fetchPayments])
 
+  async function handlePayAll(eventPayments) {
+    const unpaid = eventPayments.filter(p => !p.paid)
+    if (!unpaid.length) return
+    if (!confirm(`לסמן ${unpaid.length} עובדים כשולם?`)) return
+    await Promise.all(unpaid.map(p => togglePayment(p.id, true)))
+    setPayments(ps => ps.map(x =>
+      unpaid.find(u => u.id === x.id)
+        ? { ...x, paid: true, paid_at: new Date().toISOString() }
+        : x
+    ))
+  }
+
   async function handleToggle(p) {
     setToggling(p.id)
     try {
@@ -141,6 +153,11 @@ export default function Payments() {
                 {evOwed > 0 && <span className={styles.owedBadge}>חייב ₪{evOwed.toLocaleString('he-IL')}</span>}
                 {allPaid && <span className={styles.paidBadge}><i className="ti ti-check" /> שולם הכל</span>}
                 <span className={styles.totalLabel}>סה"כ ₪{evTotal.toLocaleString('he-IL')}</span>
+                {!allPaid && (
+                  <button className={styles.payAllBtn} onClick={() => handlePayAll(ev.payments)}>
+                    <i className="ti ti-checks" /> שלם הכל
+                  </button>
+                )}
               </div>
             </div>
 

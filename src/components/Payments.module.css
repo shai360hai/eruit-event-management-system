@@ -176,3 +176,19 @@
   .paymentRow .paidAt, .paymentRow .pendingLabel { display: none; }
   .searchInput { width: 130px; }
 }
+
+.payAllBtn {
+  background: #3b6d11;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+.payAllBtn:hover { background: #2d5209; }

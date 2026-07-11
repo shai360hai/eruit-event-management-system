@@ -11,8 +11,8 @@
 
 .pageTitle { font-size: 22px; font-weight: 600; }
 
-.filters { display: flex; gap: 8px; align-items: center; }
-.searchInput { width: 180px; }
+.headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.searchInput { width: 150px; }
 
 .empty {
   text-align: center;
@@ -20,12 +20,28 @@
   color: var(--text-secondary);
 }
 
+/* Owed banner */
+.owedBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fdf5f5;
+  border: 1px solid #f5c6c6;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #c0392b;
+  margin-bottom: 1rem;
+}
+.owedBanner i { font-size: 16px; }
+
+/* Table header */
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 110px;
+  grid-template-columns: 1fr 100px 100px 110px 65px 100px 90px 102px;
   gap: 8px;
   padding: 8px 14px;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-hint);
   text-transform: uppercase;
@@ -45,7 +61,7 @@
 
 .workerRow {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 110px;
+  grid-template-columns: 1fr 100px 100px 110px 65px 100px 90px 102px;
   gap: 8px;
   padding: 12px 14px;
   cursor: pointer;
@@ -56,13 +72,25 @@
 .workerRow:hover { background: var(--bg); }
 .workerRowOpen { background: var(--bg); }
 
-.chevron { font-size: 13px; margin-left: 6px; color: var(--text-hint); }
+.grandTotal {
+  display: grid;
+  grid-template-columns: 1fr 100px 100px 110px 65px 100px 90px 102px;
+  gap: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-weight: 600;
+  border-top: 2px solid var(--border-strong);
+  margin-top: 4px;
+}
 
+.chevron { font-size: 13px; margin-left: 6px; color: var(--text-hint); }
 .workerName { font-weight: 600; display: flex; align-items: center; }
 .muted { color: var(--text-secondary); font-size: 13px; }
-.count { font-size: 14px; }
 .salary { font-weight: 600; }
+.owedAmount { font-weight: 600; color: #c0392b; font-size: 13px; }
+.paidAmount { color: #3b6d11; font-size: 13px; }
 
+/* Detail panel */
 .eventsDetail {
   border-top: 1px solid var(--border);
   padding: 0 14px 8px;
@@ -71,7 +99,7 @@
 
 .detailHeader {
   display: grid;
-  grid-template-columns: 110px 1fr 100px 90px;
+  grid-template-columns: 110px 1fr 100px 90px 60px;
   gap: 8px;
   padding: 8px 0 6px;
   font-size: 11px;
@@ -84,7 +112,7 @@
 
 .detailRow {
   display: grid;
-  grid-template-columns: 110px 1fr 100px 90px;
+  grid-template-columns: 110px 1fr 100px 90px 60px;
   gap: 8px;
   padding: 7px 0;
   font-size: 13px;
@@ -92,10 +120,11 @@
   align-items: center;
 }
 .detailRow:last-of-type { border-bottom: none; }
+.detailRowUnpaid { background: #fffaf9; }
 
 .detailTotal {
   display: grid;
-  grid-template-columns: 110px 1fr 100px 90px;
+  grid-template-columns: 110px 1fr 100px 90px 60px;
   gap: 8px;
   padding: 8px 0 2px;
   font-size: 13px;
@@ -103,58 +132,36 @@
   border-top: 1px solid var(--border-strong);
 }
 
-.grandTotal {
-  display: grid;
-  grid-template-columns: 1fr 120px 80px 110px;
-  gap: 8px;
-  padding: 12px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  border-top: 2px solid var(--border-strong);
-  margin-top: 4px;
-  color: var(--text);
-}
+.paidToggleCell { display: flex; align-items: center; justify-content: center; }
+.paidToggle { display: flex; align-items: center; cursor: pointer; }
+.paidToggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: #3b6d11; cursor: pointer; }
 
-@media (max-width: 600px) {
-  .tableHeader, .workerRow, .grandTotal {
-    grid-template-columns: 1fr 70px 55px 90px;
-    font-size: 13px;
-  }
-  .detailHeader, .detailRow, .detailTotal {
-    grid-template-columns: 90px 1fr 0 80px;
-  }
-  .detailHeader span:nth-child(3),
-  .detailRow span:nth-child(3),
-  .detailTotal span:nth-child(3) { display: none; }
-}
+.noEvents { font-size: 13px; color: var(--text-hint); padding: 10px 0; }
 
-.headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* Row actions */
+.rowActions { display: flex; gap: 4px; justify-content: flex-end; }
+.editBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
+.editBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.deleteBtn { background: transparent; border: 1px solid var(--border); color: var(--text-hint); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
+.deleteBtn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+.pdfBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
+.pdfBtn:hover { border-color: #c0392b; color: #c0392b; background: #fdf0ef; }
 
-.addBtn {
-  background: var(--accent-bg);
-  color: var(--accent-text);
-  border: none;
-  padding: 7px 14px;
-  font-size: 13px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 500;
-  white-space: nowrap;
-}
+/* Buttons */
+.addBtn { background: var(--accent-bg); color: var(--accent-text); border: none; padding: 7px 14px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
 .addBtn:hover { opacity: 0.85; }
 
-.formCard {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: 1.25rem;
-  box-shadow: var(--shadow);
-}
+.exportBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 14px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
+.exportBtn:hover { border-color: var(--border-strong); color: var(--text); }
+
+.unpaidToggle { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 12px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+.unpaidToggle:hover { border-color: var(--border-strong); color: var(--text); }
+.unpaidToggleActive { background: #fdf5f5 !important; border-color: #f5c6c6 !important; color: #c0392b !important; }
+
+/* Form */
+.formCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }
 .formTitle { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
-.formGrid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
+.formGrid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 1rem; }
 .field { display: flex; flex-direction: column; gap: 4px; }
 .field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
 .formActions { display: flex; gap: 8px; justify-content: flex-end; }
@@ -164,55 +171,20 @@
 .saveBtn:hover { opacity: 0.85; }
 .saveBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.tableHeader { grid-template-columns: 1fr 110px 110px 70px 100px 102px !important; }
-.workerRow { grid-template-columns: 1fr 110px 110px 70px 100px 102px !important; }
-.grandTotal { grid-template-columns: 1fr 110px 110px 70px 100px 102px !important; }
-
-.rowActions { display: flex; gap: 4px; justify-content: flex-end; }
-.editBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
-.editBtn:hover { border-color: var(--border-strong); color: var(--text); }
-.deleteBtn { background: transparent; border: 1px solid var(--border); color: var(--text-hint); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
-.deleteBtn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
-.pdfBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
-.pdfBtn:hover { border-color: #c0392b; color: #c0392b; background: #fdf0ef; }
-
-.exportBtn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: 7px 14px;
-  font-size: 13px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-.exportBtn:hover { border-color: var(--border-strong); color: var(--text); }
-.noEvents { font-size: 13px; color: var(--text-hint); padding: 10px 0; }
-
-@media (max-width: 640px) {
-  .formGrid { grid-template-columns: 1fr 1fr; }
-  .tableHeader, .workerRow, .grandTotal { grid-template-columns: 1fr 70px 0 55px 85px 96px !important; }
-  .tableHeader span:nth-child(3), .workerRow span:nth-child(3), .grandTotal span:nth-child(3) { display: none; }
-}
-.tableHeader { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
-.workerRow   { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
-.grandTotal  { grid-template-columns: 1fr 100px 100px 110px 70px 100px 90px 102px !important; }
-
-/* 4-column form grid */
-.formGrid { grid-template-columns: 1fr 1fr 1fr 1fr !important; }
-
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .tableHeader, .workerRow, .grandTotal {
-    grid-template-columns: 1fr 0 0 0 55px 85px 80px 96px !important;
+    grid-template-columns: 1fr 0 0 0 55px 90px 80px 96px;
   }
   .tableHeader span:nth-child(2),
   .tableHeader span:nth-child(3),
   .tableHeader span:nth-child(4),
-  .workerRow span:nth-child(2),
-  .workerRow span:nth-child(3),
-  .workerRow span:nth-child(4) { display: none; }
-  .formGrid { grid-template-columns: 1fr 1fr !important; }
+  .workerRow > span:nth-child(2),
+  .workerRow > span:nth-child(3),
+  .workerRow > span:nth-child(4),
+  .grandTotal > span:nth-child(2),
+  .grandTotal > span:nth-child(3),
+  .grandTotal > span:nth-child(4) { display: none; }
+  .formGrid { grid-template-columns: 1fr 1fr; }
+  .detailHeader, .detailRow, .detailTotal { grid-template-columns: 90px 1fr 0 80px 50px; }
+  .detailHeader span:nth-child(3), .detailRow span:nth-child(3), .detailTotal span:nth-child(3) { display: none; }
 }
