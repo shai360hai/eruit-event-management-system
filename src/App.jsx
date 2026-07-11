@@ -10,9 +10,11 @@ import Payments from './components/Payments'
 import Dashboard from './components/Dashboard'
 import { getEvents, createEvent, updateEvent, deleteEvent } from './api'
 import styles from './App.module.css'
+import { useDarkMode } from './hooks/useDarkMode'
 
 function Shell() {
   const { user, isAdmin, signOut, loading: authLoading } = useAuth()
+  const [dark, setDark] = useDarkMode()
   const [events, setEvents] = useState([])
   const [view, setView] = useState('dashboard')
   const [editEvent, setEditEvent] = useState(null)
@@ -123,6 +125,9 @@ function Shell() {
               <img src={user.user_metadata.avatar_url} className={styles.avatar} alt="" />
             )}
             {isAdmin && <span className={styles.adminBadge}>Admin</span>}
+            <button className={styles.darkBtn} onClick={() => setDark(d => !d)} title={dark ? 'מצב יום' : 'מצב לילה'}>
+              <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} />
+            </button>
             <button className={styles.signOutBtn} onClick={signOut} title="התנתק">
               <i className="ti ti-logout" />
             </button>

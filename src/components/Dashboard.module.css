@@ -78,7 +78,7 @@
 
 .upcomingRight { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; white-space: nowrap; }
 .dayLabel { font-size: 12px; font-weight: 500; color: var(--text-secondary); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
-.dayLabelToday { background: #e8eeff; color: #2a3fa0; }
+.dayLabelToday { background: var(--chip-bg); color: var(--chip-text); }
 .upcomingTotal { font-size: 13px; font-weight: 600; color: var(--text); }
 
 /* Worker rankings */
@@ -114,3 +114,31 @@
   .cols { grid-template-columns: 1fr; }
   .metricVal { font-size: 17px; }
 }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.emptyState p { margin-bottom: 12px; }
+
+.emptyBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.emptyBtn:hover { opacity: 0.85; }

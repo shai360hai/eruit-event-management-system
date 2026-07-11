@@ -93,8 +93,14 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
             {` ${selected} ${MONTHS[month]}`}
           </div>
           {selectedEvents.length === 0 ? (
-            <div className={styles.noEvents}>
-              <span>אין אירועים ביום זה</span>
+            <div className={styles.dayEmpty}>
+              <svg width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.3,marginBottom:8}}>
+                <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <path d="M6 18h36" stroke="currentColor" strokeWidth="2"/>
+                <path d="M16 6v8M32 6v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M24 27v6M21 30h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <p className={styles.dayEmptyText}>אין אירועים ביום זה</p>
               <button className={styles.addEventBtn} onClick={() => onAddEvent(selectedStr)}>
                 <i className="ti ti-plus" /> הוסף אירוע
               </button>

@@ -19,9 +19,17 @@ export default function EventsList({ events, onEdit, onAdd }) {
 
       {events.length === 0 ? (
         <div className={styles.empty}>
-          <i className="ti ti-calendar-off" style={{ fontSize: 40, display: 'block', marginBottom: 12 }} />
-          <p>אין אירועים עדיין</p>
-          <button className={styles.emptyAddBtn} onClick={onAdd}>הוסף אירוע ראשון</button>
+          <svg width="56" height="56" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.3,marginBottom:14}}>
+            <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M6 18h36" stroke="currentColor" strokeWidth="2"/>
+            <path d="M16 6v8M32 6v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="24" cy="30" r="5" stroke="currentColor" strokeWidth="2" fill="none"/>
+            <path d="M24 27v6M21 30h6" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+          </svg>
+          <p style={{color:'var(--text-secondary)',marginBottom:12}}>עדיין לא נוצרו אירועים</p>
+          <button className={styles.emptyAddBtn} onClick={onAdd}>
+            <i className="ti ti-plus" /> צור את האירוע הראשון
+          </button>
         </div>
       ) : (
         <div className={styles.list}>

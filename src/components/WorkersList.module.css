@@ -87,8 +87,8 @@
 .workerName { font-weight: 600; display: flex; align-items: center; }
 .muted { color: var(--text-secondary); font-size: 13px; }
 .salary { font-weight: 600; }
-.owedAmount { font-weight: 600; color: #c0392b; font-size: 13px; }
-.paidAmount { color: #3b6d11; font-size: 13px; }
+.owedAmount { font-weight: 600; color: var(--danger); font-size: 13px; }
+.paidAmount { color: var(--success); font-size: 13px; }
 
 /* Detail panel */
 .eventsDetail {
@@ -145,7 +145,7 @@
 .deleteBtn { background: transparent; border: 1px solid var(--border); color: var(--text-hint); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
 .deleteBtn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
 .pdfBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); font-size: 14px; }
-.pdfBtn:hover { border-color: #c0392b; color: #c0392b; background: #fdf0ef; }
+.pdfBtn:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
 
 /* Buttons */
 .addBtn { background: var(--accent-bg); color: var(--accent-text); border: none; padding: 7px 14px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
@@ -156,7 +156,7 @@
 
 .unpaidToggle { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 12px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; white-space: nowrap; }
 .unpaidToggle:hover { border-color: var(--border-strong); color: var(--text); }
-.unpaidToggleActive { background: #fdf5f5 !important; border-color: #f5c6c6 !important; color: #c0392b !important; }
+.unpaidToggleActive { background: var(--danger-bg) !important; border-color: var(--danger) !important; color: var(--danger) !important; }
 
 /* Form */
 .formCard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1.25rem; box-shadow: var(--shadow); }

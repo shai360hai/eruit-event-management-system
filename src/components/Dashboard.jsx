@@ -59,22 +59,22 @@ export default function Dashboard({ events, onNavigate }) {
       {/* Key metrics */}
       <div className={styles.metrics}>
         <div className={styles.metric} onClick={() => onNavigate('list')}>
-          <div className={styles.metricIcon} style={{background:'#e8eeff'}}>
-            <i className="ti ti-calendar-event" style={{color:'#2a3fa0'}} />
+          <div className={styles.metricIcon} style={{background:'var(--chip-bg)'}}>
+            <i className="ti ti-calendar-event" style={{color:'var(--chip-text)'}} />
           </div>
           <div className={styles.metricVal}>{monthEvents.length}</div>
           <div className={styles.metricLbl}>אירועים החודש</div>
         </div>
         <div className={styles.metric}>
-          <div className={styles.metricIcon} style={{background:'#eaf3de'}}>
-            <i className="ti ti-cash" style={{color:'#3b6d11'}} />
+          <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
+            <i className="ti ti-cash" style={{color:'var(--success)'}} />
           </div>
           <div className={styles.metricVal}>₪{monthSalary.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שכר החודש</div>
         </div>
         <div className={styles.metric} onClick={() => onNavigate('payments')}>
-          <div className={styles.metricIcon} style={{background:'#fdf5f5'}}>
-            <i className="ti ti-alert-circle" style={{color:'#c0392b'}} />
+          <div className={styles.metricIcon} style={{background:'var(--danger-bg)'}}>
+            <i className="ti ti-alert-circle" style={{color:'var(--danger)'}} />
           </div>
           <div className={styles.metricVal} style={{color: totalUnpaid > 0 ? '#c0392b' : 'inherit'}}>
             ₪{totalUnpaid.toLocaleString('he-IL')}
@@ -82,8 +82,8 @@ export default function Dashboard({ events, onNavigate }) {
           <div className={styles.metricLbl}>חוב לעובדים</div>
         </div>
         <div className={styles.metric}>
-          <div className={styles.metricIcon} style={{background:'#f0f8ed'}}>
-            <i className="ti ti-check" style={{color:'#3b6d11'}} />
+          <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
+            <i className="ti ti-check" style={{color:'var(--success)'}} />
           </div>
           <div className={styles.metricVal}>₪{totalPaid.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שולם סה"כ</div>
@@ -98,7 +98,18 @@ export default function Dashboard({ events, onNavigate }) {
             <button className={styles.cardLink} onClick={() => onNavigate('calendar')}>לוח שנה →</button>
           </div>
           {upcoming.length === 0 ? (
-            <div className={styles.cardEmpty}>אין אירועים ב-7 הימים הקרובים</div>
+            <div className={styles.emptyState}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.35,marginBottom:12}}>
+                <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <path d="M6 18h36" stroke="currentColor" strokeWidth="2"/>
+                <path d="M16 6v8M32 6v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M16 26h8M16 32h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+              <p>אין אירועים ב-7 הימים הקרובים</p>
+              <button className={styles.emptyBtn} onClick={() => onNavigate('form')}>
+                <i className="ti ti-plus" /> צור אירוע חדש
+              </button>
+            </div>
           ) : upcoming.map(ev => {
             const d = new Date(ev.date + 'T00:00:00')
             const dayDiff = Math.round((d - now) / 86400000)
@@ -130,7 +141,18 @@ export default function Dashboard({ events, onNavigate }) {
             <button className={styles.cardLink} onClick={() => onNavigate('workers')}>כל העובדים →</button>
           </div>
           {topWorkers.length === 0 ? (
-            <div className={styles.cardEmpty}>אין נתוני שכר לחודש זה</div>
+            <div className={styles.emptyState}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.35,marginBottom:12}}>
+                <circle cx="24" cy="18" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <circle cx="10" cy="22" r="5" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <circle cx="38" cy="22" r="5" stroke="currentColor" strokeWidth="2" fill="none"/>
+                <path d="M2 40c0-5 3.6-8 8-8M46 40c0-5-3.6-8-8-8M8 40c0-7 7-12 16-12s16 5 16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+              </svg>
+              <p>אין שיבוצי עובדים החודש</p>
+              <button className={styles.emptyBtn} onClick={() => onNavigate('workers')}>
+                <i className="ti ti-user-plus" /> הוסף עובד
+              </button>
+            </div>
           ) : topWorkers.map(([name, v], i) => (
             <div key={name} className={styles.workerRankRow}>
               <span className={styles.rank}>{i + 1}</span>
