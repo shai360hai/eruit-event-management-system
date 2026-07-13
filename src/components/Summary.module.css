@@ -5,13 +5,14 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .pageTitle { font-size: 22px; font-weight: 600; }
 
-.monthSelect { width: auto; min-width: 140px; }
-
-.headerActions { display: flex; gap: 8px; align-items: center; }
+.headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.monthSelect, .sortSelect { width: auto; min-width: 130px; }
 
 .exportBtn {
   background: transparent;
@@ -24,30 +25,33 @@
   align-items: center;
   gap: 5px;
   font-weight: 500;
-  white-space: nowrap;
-  cursor: pointer;
 }
 .exportBtn:hover { border-color: var(--border-strong); color: var(--text); }
 .exportBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* Metrics */
 .metrics {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
   margin-bottom: 1.25rem;
 }
-
 .metric {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1rem 1.25rem;
+  padding: 1rem;
   text-align: center;
   box-shadow: var(--shadow);
 }
-.metricVal { font-size: 22px; font-weight: 600; color: var(--text); }
+.metricDanger { background: var(--danger-bg); border-color: var(--danger); }
+.metricSuccess { background: var(--success-bg); border-color: var(--success); }
+.metricVal { font-size: 18px; font-weight: 600; color: var(--text); }
+.metricDanger .metricVal { color: var(--danger); }
+.metricSuccess .metricVal { color: var(--success); }
 .metricLbl { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
 
+/* Cards */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -57,9 +61,17 @@
 }
 .cardTitle { font-size: 15px; font-weight: 600; margin-bottom: 1rem; }
 
+.empty {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+/* Summary table */
 .tableHeader {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 100px;
+  grid-template-columns: 1fr 120px 80px 90px 110px;
   gap: 8px;
   padding: 0 0 8px;
   font-size: 12px;
@@ -69,10 +81,9 @@
   letter-spacing: 0.04em;
   border-bottom: 1px solid var(--border);
 }
-
 .tableRow {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 100px;
+  grid-template-columns: 1fr 120px 80px 90px 110px;
   gap: 8px;
   padding: 10px 0;
   font-size: 14px;
@@ -80,10 +91,9 @@
   align-items: center;
 }
 .tableRow:last-of-type { border-bottom: none; }
-
 .totalRow {
   display: grid;
-  grid-template-columns: 1fr 120px 80px 100px;
+  grid-template-columns: 1fr 120px 80px 90px 110px;
   gap: 8px;
   padding: 10px 0 0;
   font-size: 14px;
@@ -93,59 +103,124 @@
 }
 
 .workerName { font-weight: 500; }
-.muted { color: var(--text-secondary); }
-.salary { font-weight: 500; }
+.muted { color: var(--text-secondary); font-size: 13px; }
+.salary { font-weight: 600; }
 
-.workerBlock { margin-bottom: 1.25rem; }
-.workerBlock:last-child { margin-bottom: 0; }
+/* Paid indicators */
+.paidFull    { color: var(--success); font-weight: 600; font-size: 12px; }
+.paidPartial { color: #e67e22; font-weight: 500; font-size: 12px; }
+.paidNone    { color: var(--danger); font-size: 12px; }
+
+/* Worker detail blocks */
+.workerBlock {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+.workerBlock:last-child { border-bottom: none; margin-bottom: 0; }
 
 .workerBlockName {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.workerBlockRole {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  background: var(--surface-2, var(--bg));
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.workerBlockTotal {
   font-size: 14px;
   font-weight: 600;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border);
+  margin-right: auto;
 }
 
+.dateHeader {
+  display: grid;
+  grid-template-columns: 110px 1fr 110px 100px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--border);
+}
 .dateRow {
   display: grid;
-  grid-template-columns: 120px 1fr 100px;
+  grid-template-columns: 110px 1fr 110px 100px;
   gap: 8px;
-  font-size: 13px;
-  padding: 5px 0;
-  border-bottom: 1px solid var(--border);
   align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  transition: background .1s;
 }
+.dateRow:last-of-type { border-bottom: none; }
+.dateRowPaid { opacity: 0.7; }
 
-.workerTotal {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0 0;
+.salaryInput {
+  width: 90px;
+  padding: 5px 8px;
   font-size: 13px;
   font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  direction: ltr;
+}
+.salaryInput:focus { border-color: var(--border-strong); outline: none; }
+
+.paidCell { display: flex; align-items: center; }
+
+.paidBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.paidBtnOn {
+  background: var(--success-bg);
+  border: 1px solid var(--success);
+  color: var(--success);
+}
+.paidBtnOn:hover { opacity: 0.8; }
+.paidBtnOff {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-hint);
+}
+.paidBtnOff:hover { border-color: var(--success); color: var(--success); background: var(--success-bg); }
+.paidBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.workerSubTotal {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 0 0;
   color: var(--text-secondary);
 }
 
-.empty {
-  text-align: center;
-  padding: 2.5rem;
-  color: var(--text-secondary);
-  font-size: 14px;
+@media (max-width: 640px) {
+  .metrics { grid-template-columns: 1fr 1fr 1fr; }
+  .tableHeader, .tableRow, .totalRow { grid-template-columns: 1fr 80px 60px 0 90px; }
+  .tableHeader span:nth-child(4), .tableRow span:nth-child(4), .totalRow span:nth-child(4) { display: none; }
+  .dateHeader, .dateRow { grid-template-columns: 90px 1fr 90px 90px; }
 }
-
-@media (max-width: 600px) {
-  .metrics { grid-template-columns: 1fr 1fr; }
-  .tableHeader, .tableRow, .totalRow { grid-template-columns: 1fr 80px 60px 90px; font-size: 13px; }
-}
-
-.workerBlockName {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 8px 0 6px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 2px;
-}
-.workerBlockTotal { font-size: 14px; font-weight: 600; color: var(--text); }

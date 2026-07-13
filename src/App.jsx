@@ -101,7 +101,7 @@ function Shell() {
       <nav className={styles.nav}>
         <div className={styles.navBrand}>
           <i className="ti ti-confetti" />
-          ERUIT
+          ניהול אירועים
         </div>
         <div className={styles.navLinks}>
           {NAV.map(n => (
@@ -154,7 +154,10 @@ function Shell() {
         ) : view === 'payments' ? (
           <Payments />
         ) : (
-          <Summary events={events} />
+          <Summary events={events} onEventsUpdate={async () => {
+            const fresh = await import('./api').then(m => m.getEvents())
+            setEvents(fresh)
+          }} />
         )}
       </main>
     </div>

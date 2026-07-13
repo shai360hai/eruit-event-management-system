@@ -9,10 +9,10 @@ export default function Login() {
       <div className={styles.card}>
         <div className={styles.logo}>
           <i className="ti ti-confetti" />
-          ERUIT
+          ניהול אירועים
         </div>
         <h1 className={styles.title}>ברוכים הבאים</h1>
-        <p className={styles.sub}>מערכת ניהול אירועים ועובדים</p>
+        <p className={styles.sub}>ניהול אירועים, עובדים ותשלומים</p>
         <button className={styles.googleBtn} onClick={signInWithGoogle}>
           <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
             <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
