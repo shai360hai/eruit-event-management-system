@@ -139,9 +139,20 @@
 .saveBtn:disabled, .cancelBtn:disabled, .deleteBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 @media (max-width: 600px) {
+  .form { padding: 1rem; }
   .grid2 { grid-template-columns: 1fr; }
-  .workerRow { grid-template-columns: 1fr 1fr 70px 44px 32px; }
-  .workerHeader { grid-template-columns: 1fr 1fr 70px 44px 32px; }
+  .workerRow { grid-template-columns: 1fr 80px 40px 32px; }
+  .workerHeader { grid-template-columns: 1fr 80px 40px 32px; }
+  .workerRow input:nth-child(2) { display: none; } /* hide role on mobile */
+  .workerHeader span:nth-child(2) { display: none; }
+  .workersSectionTitle { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .workerBtns { width: 100%; }
+  .addWorkerBtn { flex: 1; justify-content: center; }
+  .newWorkerGrid { grid-template-columns: 1fr 1fr !important; }
+  .title { font-size: 16px; }
+  .totalAmount { font-size: 18px; }
+  .actionsRight { width: 100%; }
+  .saveBtn { flex: 1; justify-content: center; }
 }
 
 .workerBtns { display: flex; gap: 6px; }

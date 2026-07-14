@@ -110,9 +110,13 @@
 .rankSalary { font-size: 14px; font-weight: 600; color: var(--text); margin-right: auto; white-space: nowrap; }
 
 @media (max-width: 640px) {
-  .metrics { grid-template-columns: 1fr 1fr; }
+  .metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
   .cols { grid-template-columns: 1fr; }
-  .metricVal { font-size: 17px; }
+  .metricVal { font-size: 16px; }
+  .metricIcon { width: 30px; height: 30px; font-size: 15px; }
+  .title { font-size: 20px; }
+  .card { padding: 1rem; }
+  .upcomingName { font-size: 13px; }
 }
 
 .emptyState {

@@ -83,7 +83,7 @@
   font-weight: 600;
 }
 
-.cell.selectedCell { background: #f0f4ff; }
+.cell.selectedCell { background: var(--chip-bg); }
 .cell.hasEvents { }
 
 .dayNum {
@@ -168,9 +168,13 @@
 .eventRowMeta span { display: flex; align-items: center; gap: 3px; }
 
 @media (max-width: 600px) {
-  .cell, .cellEmpty { min-height: 52px; padding: 4px; }
-  .dayName { font-size: 11px; }
-  .dayNum { font-size: 12px; }
+  .cell, .cellEmpty { min-height: 48px; padding: 3px; }
+  .dayName { font-size: 10px; padding: 6px 0; }
+  .dayNum { font-size: 11px; width: 20px; height: 20px; line-height: 20px; }
+  .cell.today .dayNum { width: 20px; height: 20px; font-size: 11px; }
+  .dayPanel { padding: 0.75rem 1rem; }
+  .eventRowName, .eventRowTotal { font-size: 13px; }
+  .addEventBtn { padding: 8px 12px; font-size: 13px; }
 }
 
 .noEvents {

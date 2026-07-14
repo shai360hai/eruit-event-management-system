@@ -171,10 +171,20 @@
 }
 
 @media (max-width: 640px) {
-  .metrics { grid-template-columns: 1fr 1fr; }
-  .paymentRow { grid-template-columns: 1fr 80px 0 90px; }
+  .metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metricVal { font-size: 16px; }
+  .paymentRow { grid-template-columns: 1fr 75px 90px; }
   .paymentRow .paidAt, .paymentRow .pendingLabel { display: none; }
-  .searchInput { width: 130px; }
+  .paymentRow .amount { display: none; } /* 3-col: name | badge | button */
+  .searchInput { width: 100%; }
+  .filters { flex-direction: column; align-items: stretch; gap: 8px; }
+  .filterBtns { justify-content: stretch; }
+  .filterBtn { flex: 1; }
+  .paymentList { padding: 0 0.75rem; }
+  .eventCardHeader { padding: 0.75rem 1rem; }
+  .eventCardTotals { gap: 6px; }
+  .toggleBtn { padding: 6px 10px; font-size: 12px; }
+  .pageTitle { font-size: 18px; }
 }
 
 .payAllBtn {

@@ -219,8 +219,25 @@
 }
 
 @media (max-width: 640px) {
-  .metrics { grid-template-columns: 1fr 1fr 1fr; }
-  .tableHeader, .tableRow, .totalRow { grid-template-columns: 1fr 80px 60px 0 90px; }
-  .tableHeader span:nth-child(4), .tableRow span:nth-child(4), .totalRow span:nth-child(4) { display: none; }
-  .dateHeader, .dateRow { grid-template-columns: 90px 1fr 90px 90px; }
+  .metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metricVal { font-size: 15px; }
+  .tableHeader, .tableRow, .totalRow {
+    grid-template-columns: 1fr 70px 70px;
+  }
+  .tableHeader span:nth-child(2),
+  .tableHeader span:nth-child(3),
+  .tableRow span:nth-child(2),
+  .tableRow span:nth-child(3),
+  .totalRow span:nth-child(2),
+  .totalRow span:nth-child(3) { display: none; }
+  .dateHeader { grid-template-columns: 85px 1fr 85px 80px; font-size: 10px; }
+  .dateRow { grid-template-columns: 85px 1fr 85px 80px; }
+  .salaryInput { width: 75px; }
+  .paidBtn { padding: 4px 8px; font-size: 11px; }
+  .workerBlockName { font-size: 14px; flex-wrap: wrap; }
+  .headerActions { flex-direction: column; align-items: stretch; }
+  .monthSelect, .sortSelect { width: 100%; }
+  .pageTitle { font-size: 18px; }
+  .card { padding: 1rem; }
+  .workerSubTotal { flex-direction: column; gap: 4px; }
 }

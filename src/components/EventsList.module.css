@@ -67,3 +67,11 @@
   padding: 9px 22px;
   font-size: 14px;
 }
+
+@media (max-width: 640px) {
+  .pageTitle { font-size: 18px; }
+  .card { padding: 0.875rem 1rem; }
+  .eventName { font-size: 14px; }
+  .eventTotal { font-size: 14px; }
+  .cardMeta { gap: 10px; font-size: 12px; }
+}

@@ -1,9 +1,11 @@
 .shell {
   min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport for iOS */
   display: flex;
   flex-direction: column;
 }
 
+/* ── Top nav (desktop) ── */
 .nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -15,10 +17,12 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  /* iOS safe area */
+  padding-top: env(safe-area-inset-top);
 }
 
 .navBrand {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   display: flex;
@@ -26,26 +30,32 @@
   gap: 6px;
   letter-spacing: -0.02em;
   margin-left: 8px;
+  white-space: nowrap;
 }
 
 .navLinks {
   display: flex;
   gap: 2px;
   flex: 1;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
+.navLinks::-webkit-scrollbar { display: none; }
 
 .navLink {
   background: transparent;
   border: none;
   color: var(--text-secondary);
-  padding: 6px 12px;
+  padding: 6px 10px;
   font-size: 13px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-weight: 500;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 .navLink:hover { background: var(--bg); color: var(--text); }
 .navLink.active { background: var(--bg); color: var(--text); font-weight: 600; }
@@ -54,7 +64,7 @@
   background: var(--accent-bg);
   color: var(--accent-text);
   border: none;
-  padding: 7px 14px;
+  padding: 7px 12px;
   font-size: 13px;
   border-radius: var(--radius-sm);
   display: flex;
@@ -62,7 +72,7 @@
   gap: 5px;
   font-weight: 500;
   white-space: nowrap;
-  margin-right: auto;
+  flex-shrink: 0;
 }
 .addBtn:hover { opacity: 0.85; }
 
@@ -71,7 +81,8 @@
   max-width: 860px;
   width: 100%;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem;
+  padding: 1.25rem 1rem;
+  /* bottom nav spacer on mobile */
 }
 
 .loading {
@@ -81,16 +92,7 @@
   font-size: 15px;
 }
 
-@media (max-width: 640px) {
-  .nav { padding: 0 0.75rem; height: 52px; }
-  .navLink span, .navLink { font-size: 12px; padding: 5px 8px; }
-  .navBrand { font-size: 15px; }
-  .main { padding: 1rem 0.75rem; }
-  .addBtn { padding: 6px 10px; font-size: 12px; }
-}
-
-.navRight { display: flex; align-items: center; gap: 8px; margin-right: auto; }
-
+.navRight { display: flex; align-items: center; gap: 6px; margin-right: auto; flex-shrink: 0; }
 .userInfo { display: flex; align-items: center; gap: 6px; }
 
 .avatar {
@@ -109,51 +111,120 @@
   border-radius: 10px;
 }
 
-.signOutBtn {
+.signOutBtn, .darkBtn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--text-secondary);
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
 }
-.signOutBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.signOutBtn:hover, .darkBtn:hover { border-color: var(--border-strong); color: var(--text); }
 
 .centered {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 100vh;
+  min-height: 100dvh;
   gap: 10px;
   color: var(--text-secondary);
   font-size: 15px;
 }
 
 .unpaidBadge {
-  background: #c0392b;
+  background: var(--danger);
   color: white;
   font-size: 10px;
   font-weight: 600;
-  padding: 2px 6px;
+  padding: 2px 5px;
   border-radius: 10px;
-  margin-right: 4px;
   line-height: 1.4;
 }
 
-.darkBtn {
+/* ── Bottom tab bar (mobile only) ── */
+.bottomNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 4px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  z-index: 200;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+
+.bottomTab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  width: 30px;
-  height: 30px;
+  border: none;
+  color: var(--text-hint);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 4px 10px;
   border-radius: var(--radius-sm);
+  min-width: 52px;
+  position: relative;
+}
+.bottomTab.active { color: var(--text); }
+.bottomTab i { font-size: 22px; }
+
+.bottomTabBadge {
+  position: absolute;
+  top: 0;
+  right: 6px;
+  background: var(--danger);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+
+.bottomAddBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+  margin-bottom: 4px;
 }
-.darkBtn:hover { border-color: var(--border-strong); color: var(--text); }
+
+/* ── Mobile breakpoint ── */
+@media (max-width: 640px) {
+  .nav {
+    padding: 0 0.75rem;
+    height: 48px;
+  }
+  /* Hide desktop nav links & add button — use bottom bar instead */
+  .navLinks { display: none; }
+  .addBtn { display: none; }
+  .navBrand { font-size: 14px; }
+  .adminBadge { display: none; }
+
+  .main {
+    padding: 1rem 0.75rem;
+    /* Make room for bottom nav */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  /* Show bottom nav */
+  .bottomNav { display: flex; }
+}

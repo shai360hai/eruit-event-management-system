@@ -93,3 +93,27 @@ button {
   font-weight: 500;
 }
 button:active { transform: scale(0.98); }
+
+/* ── iOS / Mobile fixes ── */
+html { -webkit-text-size-adjust: 100%; }
+
+/* Prevent iOS zoom on input focus */
+input, select, textarea {
+  font-size: 16px !important; /* 16px prevents iOS auto-zoom */
+}
+
+/* Safe area for iPhone notch / home bar */
+.shell {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Smooth momentum scroll */
+.main {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Remove iOS tap highlight */
+* { -webkit-tap-highlight-color: transparent; }
+
+/* Touch targets minimum 44px */
+button { min-height: 36px; }

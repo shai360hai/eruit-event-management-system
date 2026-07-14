@@ -173,7 +173,7 @@
 
 @media (max-width: 768px) {
   .tableHeader, .workerRow, .grandTotal {
-    grid-template-columns: 1fr 0 0 0 55px 90px 80px 96px;
+    grid-template-columns: 1fr 55px 90px 80px 96px;
   }
   .tableHeader span:nth-child(2),
   .tableHeader span:nth-child(3),
@@ -185,6 +185,28 @@
   .grandTotal > span:nth-child(3),
   .grandTotal > span:nth-child(4) { display: none; }
   .formGrid { grid-template-columns: 1fr 1fr; }
-  .detailHeader, .detailRow, .detailTotal { grid-template-columns: 90px 1fr 0 80px 50px; }
+  .detailHeader, .detailRow, .detailTotal { grid-template-columns: 85px 1fr 80px 50px; }
   .detailHeader span:nth-child(3), .detailRow span:nth-child(3), .detailTotal span:nth-child(3) { display: none; }
+  .pageTitle { font-size: 18px; }
+  .headerActions { flex-wrap: wrap; gap: 6px; }
+  .searchInput { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .tableHeader, .workerRow, .grandTotal {
+    grid-template-columns: 1fr 80px 90px;
+  }
+  .tableHeader span:nth-child(2),
+  .tableHeader span:nth-child(3),
+  .tableHeader span:nth-child(4),
+  .tableHeader span:nth-child(5),
+  .workerRow > span:nth-child(2),
+  .workerRow > span:nth-child(3),
+  .workerRow > span:nth-child(4),
+  .workerRow > span:nth-child(5),
+  .grandTotal > span:nth-child(2),
+  .grandTotal > span:nth-child(3),
+  .grandTotal > span:nth-child(4),
+  .grandTotal > span:nth-child(5) { display: none; }
+  .workerRow { padding: 10px; }
 }
