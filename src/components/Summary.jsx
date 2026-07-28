@@ -1,26 +1,19 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
-import { updateEvent } from '../api'
+import { useState } from 'react'
 import styles from './Summary.module.css'
 import { exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 const SORT_OPTIONS = [
-  { value: 'salary', label: 'לפי שכר' },
-  { value: 'role',   label: 'לפי תפקיד' },
-  { value: 'name',   label: 'לפי שם' },
-  { value: 'count',  label: 'לפי מספר אירועים' },
+  { value: 'salary',   label: 'לפי שכר' },
+  { value: 'role',     label: 'לפי תפקיד' },
+  { value: 'name',     label: 'לפי שם' },
+  { value: 'location', label: 'לפי מיקום' },
+  { value: 'count',    label: 'לפי מספר אירועים' },
 ]
 
-export default function Summary({ events, onEventsUpdate }) {
-  const [month, setMonth]       = useState(String(new Date().getMonth() + 1))
-  const [sortBy, setSortBy]     = useState('salary')
-  const [payments, setPayments] = useState([]) // from payments table
-  const [saving, setSaving]     = useState(null) // worker name being saved
-
-  useEffect(() => {
-    supabase.from('payments').select('*, events(date)').then(({ data }) => setPayments(data || []))
-  }, [])
+export default function Summary({ events }) {
+  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
+  const [sortBy, setSortBy] = useState('salary')
 
   const filtered = month
     ? events.filter(e => e.date && new Date(e.date + 'T00:00:00').getMonth() + 1 === parseInt(month))
@@ -29,89 +22,43 @@ export default function Summary({ events, onEventsUpdate }) {
   const totalEvents = filtered.length
   const totalPay = filtered.reduce((s, e) =>
     s + (e.workers || []).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
+  const totalPaid = filtered.reduce((s, e) =>
+    s + (e.workers || []).filter(w => w.paid).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
 
-  // Build worker map — include paid status from payments table + per-date entries
+  // ── Build worker map ──
   const workerMap = {}
   filtered.forEach(ev => {
     const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : ''
     ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
-      const payment = payments.find(p => p.event_id === ev.id && p.worker_name === w.name)
-      const paid = payment?.paid ?? !!w.paid
-      if (!workerMap[w.name]) workerMap[w.name] = { role: w.role || '', total: 0, totalPaid: 0, count: 0, dates: [] }
       const sal = parseFloat(w.salary) || 0
+      if (!workerMap[w.name]) workerMap[w.name] = {
+        role: w.role || '', total: 0, totalPaid: 0, count: 0,
+        location: ev.location || '', dates: []
+      }
       workerMap[w.name].total += sal
-      if (paid) workerMap[w.name].totalPaid += sal
+      if (w.paid) workerMap[w.name].totalPaid += sal
       workerMap[w.name].count++
       if (w.role && !workerMap[w.name].role) workerMap[w.name].role = w.role
+      if (ev.location && !workerMap[w.name].location) workerMap[w.name].location = ev.location
       workerMap[w.name].dates.push({
-        date: d, event: ev.name || '', salary: sal,
-        paid, eventId: ev.id, workerIdx: idx, paymentId: payment?.id
+        date: d, event: ev.name || '', location: ev.location || '',
+        salary: sal, paid: !!w.paid, eventId: ev.id, workerIdx: idx
       })
     })
   })
 
-  // Sort
+  // ── Sort ──
   let sorted = Object.entries(workerMap)
-  if (sortBy === 'salary') sorted.sort((a, b) => b[1].total - a[1].total)
-  else if (sortBy === 'role') sorted.sort((a, b) => (a[1].role || '').localeCompare(b[1].role || '', 'he') || a[0].localeCompare(b[0], 'he'))
+  if (sortBy === 'salary')   sorted.sort((a, b) => b[1].total - a[1].total)
+  else if (sortBy === 'role') sorted.sort((a, b) => (a[1].role||'').localeCompare(b[1].role||'','he') || a[0].localeCompare(b[0],'he'))
   else if (sortBy === 'name') sorted.sort((a, b) => a[0].localeCompare(b[0], 'he'))
+  else if (sortBy === 'location') sorted.sort((a, b) => (a[1].location||'').localeCompare(b[1].location||'','he'))
   else if (sortBy === 'count') sorted.sort((a, b) => b[1].count - a[1].count)
 
   const grandTotal = sorted.reduce((s, [, v]) => s + v.total, 0)
   const grandPaid  = sorted.reduce((s, [, v]) => s + v.totalPaid, 0)
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
-
-  // Toggle paid on a specific date-entry
-  async function togglePaid(entry) {
-    setSaving(entry.eventId + entry.workerIdx)
-    try {
-      const ev = events.find(e => e.id === entry.eventId)
-      if (!ev) return
-      const newPaid = !entry.paid
-
-      // Update events table (workers JSON)
-      const updatedWorkers = (ev.workers || []).map((w, i) =>
-        i === entry.workerIdx ? { ...w, paid: newPaid } : w
-      )
-      await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
-
-      // Update payments table if row exists
-      if (entry.paymentId) {
-        await supabase.from('payments').update({
-          paid: newPaid,
-          paid_at: newPaid ? new Date().toISOString() : null
-        }).eq('id', entry.paymentId)
-        setPayments(ps => ps.map(p => p.id === entry.paymentId
-          ? { ...p, paid: newPaid, paid_at: newPaid ? new Date().toISOString() : null }
-          : p
-        ))
-      }
-
-      // Optimistic update on events
-      ev.workers = updatedWorkers
-      if (onEventsUpdate) onEventsUpdate()
-    } finally {
-      setSaving(null)
-    }
-  }
-
-  // Edit salary inline
-  async function saveSalary(entry, newSalary) {
-    setSaving(entry.eventId + entry.workerIdx + 'sal')
-    try {
-      const ev = events.find(e => e.id === entry.eventId)
-      if (!ev) return
-      const updatedWorkers = (ev.workers || []).map((w, i) =>
-        i === entry.workerIdx ? { ...w, salary: parseFloat(newSalary) || 0 } : w
-      )
-      await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
-      ev.workers = updatedWorkers
-      if (onEventsUpdate) onEventsUpdate()
-    } finally {
-      setSaving(null)
-    }
-  }
 
   function handleExportAll() {
     const data = sorted.map(([name, v]) => ({ name, role: v.role, count: v.count, total: v.total }))
@@ -146,12 +93,12 @@ export default function Summary({ events, onEventsUpdate }) {
           <div className={styles.metricLbl}>סה"כ שכר</div>
         </div>
         <div className={`${styles.metric} ${styles.metricSuccess}`}>
-          <div className={styles.metricVal}>₪{grandPaid.toLocaleString('he-IL')}</div>
+          <div className={styles.metricVal}>₪{totalPaid.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שולם</div>
         </div>
         <div className={`${styles.metric} ${styles.metricDanger}`}>
-          <div className={styles.metricVal}>₪{(totalPay - grandPaid).toLocaleString('he-IL')}</div>
-          <div className={styles.metricLbl}>ממתין לתשלום</div>
+          <div className={styles.metricVal}>₪{(totalPay - totalPaid).toLocaleString('he-IL')}</div>
+          <div className={styles.metricLbl}>ממתין</div>
         </div>
         <div className={styles.metric}>
           <div className={styles.metricVal}>{sorted.length}</div>
@@ -193,65 +140,48 @@ export default function Summary({ events, onEventsUpdate }) {
               <span>סה"כ</span>
               <span />
               <span>{sorted.reduce((s, [, v]) => s + v.count, 0)}</span>
-              <span className={grandPaid === grandTotal && grandTotal > 0 ? styles.paidFull : styles.paidPartial}>
-                ₪{grandPaid.toLocaleString('he-IL')}
+              <span className={grandPaid > 0 ? styles.paidFull : ''}>
+                {grandPaid > 0 ? `₪${grandPaid.toLocaleString('he-IL')}` : '—'}
               </span>
               <span>₪{grandTotal.toLocaleString('he-IL')}</span>
             </div>
           </div>
 
-          {/* Detailed dates per worker — with paid toggle + salary edit */}
-          <div className={styles.card} style={{ marginTop: 16 }}>
-            <h2 className={styles.cardTitle}>פירוט לפי עובד — שינוי שכר ומצב תשלום</h2>
+          {/* Per-event breakdown with paid status */}
+          <div className={styles.card} style={{marginTop:16}}>
+            <h2 className={styles.cardTitle}>פירוט לפי עובד — כולל סטטוס תשלום</h2>
             {sorted.map(([name, v]) => (
               <div key={name} className={styles.workerBlock}>
                 <div className={styles.workerBlockName}>
                   <span>{name}</span>
-                  <span className={styles.workerBlockRole}>{v.role || ''}</span>
+                  {v.role && <span className={styles.workerBlockRole}>{v.role}</span>}
                   <span className={styles.workerBlockTotal}>₪{v.total.toLocaleString('he-IL')}</span>
+                  {v.totalPaid === v.total && v.total > 0 && <span className={styles.paidFull}>✓ שולם הכל</span>}
+                  {v.totalPaid > 0 && v.totalPaid < v.total && (
+                    <span className={styles.paidPartial}>שולם ₪{v.totalPaid.toLocaleString('he-IL')}</span>
+                  )}
                 </div>
                 <div className={styles.dateHeader}>
                   <span>תאריך</span>
                   <span>אירוע</span>
-                  <span>שכר ₪</span>
-                  <span>שולם</span>
+                  <span>מיקום</span>
+                  <span>שכר</span>
+                  <span>סטטוס</span>
                 </div>
-                {v.dates.map((d, i) => {
-                  const isSavingSal = saving === d.eventId + d.workerIdx + 'sal'
-                  const isSavingPaid = saving === d.eventId + d.workerIdx
-                  return (
-                    <div key={i} className={`${styles.dateRow} ${d.paid ? styles.dateRowPaid : ''}`}>
-                      <span className={styles.muted}>{d.date}</span>
-                      <span>{d.event}</span>
-                      <span>
-                        <input
-                          type="number"
-                          defaultValue={d.salary}
-                          className={styles.salaryInput}
-                          min="0"
-                          disabled={isSavingSal}
-                          onBlur={e => {
-                            const val = parseFloat(e.target.value)
-                            if (!isNaN(val) && val !== d.salary) saveSalary(d, val)
-                          }}
-                          onKeyDown={e => {
-                            if (e.key === 'Enter') e.target.blur()
-                          }}
-                        />
-                      </span>
-                      <span className={styles.paidCell}>
-                        <button
-                          className={`${styles.paidBtn} ${d.paid ? styles.paidBtnOn : styles.paidBtnOff}`}
-                          onClick={() => togglePaid(d)}
-                          disabled={isSavingPaid}
-                          title={d.paid ? 'לחץ לביטול תשלום' : 'לחץ לסימון כשולם'}
-                        >
-                          {isSavingPaid ? '...' : d.paid ? <><i className="ti ti-check" /> שולם</> : 'ממתין'}
-                        </button>
-                      </span>
-                    </div>
-                  )
-                })}
+                {v.dates.map((d, i) => (
+                  <div key={i} className={`${styles.dateRow} ${d.paid ? styles.dateRowPaid : ''}`}>
+                    <span className={styles.muted}>{d.date}</span>
+                    <span>{d.event}</span>
+                    <span className={styles.muted}>{d.location || '—'}</span>
+                    <span className={styles.salary}>₪{d.salary.toLocaleString('he-IL')}</span>
+                    <span>
+                      {d.paid
+                        ? <span className={styles.paidFull}>✓ שולם</span>
+                        : <span className={styles.paidNone}>ממתין</span>
+                      }
+                    </span>
+                  </div>
+                ))}
                 <div className={styles.workerSubTotal}>
                   <span>סה"כ: ₪{v.total.toLocaleString('he-IL')}</span>
                   {v.totalPaid > 0 && <span className={styles.paidFull}>שולם: ₪{v.totalPaid.toLocaleString('he-IL')}</span>}

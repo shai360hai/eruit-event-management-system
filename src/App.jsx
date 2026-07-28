@@ -101,7 +101,7 @@ function Shell() {
       <nav className={styles.nav}>
         <div className={styles.navBrand}>
           <i className="ti ti-confetti" />
-          ניהול אירועים
+          ERUIT
         </div>
         <div className={styles.navLinks}>
           {NAV.map(n => (
@@ -154,32 +154,9 @@ function Shell() {
         ) : view === 'payments' ? (
           <Payments />
         ) : (
-          <Summary events={events} onEventsUpdate={async () => {
-            const fresh = await import('./api').then(m => m.getEvents())
-            setEvents(fresh)
-          }} />
+          <Summary events={events} />
         )}
       </main>
-
-      {/* Mobile bottom tab bar */}
-      <nav className={styles.bottomNav}>
-        {NAV.map(n => (
-          <button
-            key={n.id}
-            className={`${styles.bottomTab} ${view === n.id ? styles.active : ''}`}
-            onClick={() => { setView(n.id); setEditEvent(null) }}
-          >
-            {n.id === 'payments' && unpaidTotal > 0 && (
-              <span className={styles.bottomTabBadge}>!</span>
-            )}
-            <i className={`ti ${n.icon}`} />
-            <span>{n.label}</span>
-          </button>
-        ))}
-        <button className={styles.bottomAddBtn} onClick={openAdd} title="אירוע חדש">
-          <i className="ti ti-plus" />
-        </button>
-      </nav>
     </div>
   )
 }

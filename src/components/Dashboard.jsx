@@ -11,7 +11,7 @@ export default function Dashboard({ events, onNavigate }) {
   const monthName = MONTHS[thisMonth]
 
   useEffect(() => {
-    supabase.from('payments').select('*').then(({ data }) => setPayments(data || []))
+    supabase.from('payments').select('*, events(date)').then(({ data }) => setPayments(data || []))
   }, [])
 
   // This month events
@@ -28,20 +28,26 @@ export default function Dashboard({ events, onNavigate }) {
     return diff >= 0 && diff <= 7
   }).sort((a, b) => new Date(a.date) - new Date(b.date))
 
-  // Financials
+  // ── Financials — all from events (single source of truth) ──
+  // Total salary this month (from events workers JSON)
   const monthSalary = monthEvents.reduce((s, e) =>
     s + (e.workers || []).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
 
-  const totalUnpaid = payments.filter(p => !p.paid).reduce((s, p) => s + p.amount, 0)
-  const totalPaid = payments.filter(p => p.paid).reduce((s, p) => s + p.amount, 0)
+  // Paid/unpaid this month — also from events workers JSON (paid flag)
+  const monthPaid = monthEvents.reduce((s, e) =>
+    s + (e.workers || []).filter(w => w.paid).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
+
+  const monthUnpaid = monthSalary - monthPaid
 
   // Top workers this month
   const workerMap = {}
   monthEvents.forEach(e => {
     ;(e.workers || []).forEach(w => {
       if (!w.name) return
-      if (!workerMap[w.name]) workerMap[w.name] = { total: 0, count: 0 }
-      workerMap[w.name].total += parseFloat(w.salary) || 0
+      if (!workerMap[w.name]) workerMap[w.name] = { total: 0, paid: 0, count: 0 }
+      const sal = parseFloat(w.salary) || 0
+      workerMap[w.name].total += sal
+      if (w.paid) workerMap[w.name].paid += sal
       workerMap[w.name].count++
     })
   })
@@ -56,7 +62,7 @@ export default function Dashboard({ events, onNavigate }) {
         <p className={styles.sub}>סיכום {monthName} {now.getFullYear()}</p>
       </div>
 
-      {/* Key metrics */}
+      {/* Key metrics — all from same source */}
       <div className={styles.metrics}>
         <div className={styles.metric} onClick={() => onNavigate('list')}>
           <div className={styles.metricIcon} style={{background:'var(--chip-bg)'}}>
@@ -65,6 +71,7 @@ export default function Dashboard({ events, onNavigate }) {
           <div className={styles.metricVal}>{monthEvents.length}</div>
           <div className={styles.metricLbl}>אירועים החודש</div>
         </div>
+
         <div className={styles.metric}>
           <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
             <i className="ti ti-cash" style={{color:'var(--success)'}} />
@@ -72,21 +79,24 @@ export default function Dashboard({ events, onNavigate }) {
           <div className={styles.metricVal}>₪{monthSalary.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שכר החודש</div>
         </div>
-        <div className={styles.metric} onClick={() => onNavigate('payments')}>
-          <div className={styles.metricIcon} style={{background:'var(--danger-bg)'}}>
-            <i className="ti ti-alert-circle" style={{color:'var(--danger)'}} />
-          </div>
-          <div className={styles.metricVal} style={{color: totalUnpaid > 0 ? '#c0392b' : 'inherit'}}>
-            ₪{totalUnpaid.toLocaleString('he-IL')}
-          </div>
-          <div className={styles.metricLbl}>חוב לעובדים</div>
-        </div>
-        <div className={styles.metric}>
+
+        <div className={`${styles.metric} ${monthPaid > 0 ? styles.metricSuccess : ''}`}>
           <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
             <i className="ti ti-check" style={{color:'var(--success)'}} />
           </div>
-          <div className={styles.metricVal}>₪{totalPaid.toLocaleString('he-IL')}</div>
-          <div className={styles.metricLbl}>שולם סה"כ</div>
+          <div className={styles.metricVal} style={{color:'var(--success)'}}>₪{monthPaid.toLocaleString('he-IL')}</div>
+          <div className={styles.metricLbl}>שולם החודש</div>
+        </div>
+
+        <div className={`${styles.metric} ${monthUnpaid > 0 ? styles.metricDanger : ''}`}
+          onClick={() => onNavigate('payments')}>
+          <div className={styles.metricIcon} style={{background:'var(--danger-bg)'}}>
+            <i className="ti ti-alert-circle" style={{color:'var(--danger)'}} />
+          </div>
+          <div className={styles.metricVal} style={{color: monthUnpaid > 0 ? 'var(--danger)' : 'inherit'}}>
+            ₪{monthUnpaid.toLocaleString('he-IL')}
+          </div>
+          <div className={styles.metricLbl}>חוב לעובדים</div>
         </div>
       </div>
 
@@ -99,7 +109,7 @@ export default function Dashboard({ events, onNavigate }) {
           </div>
           {upcoming.length === 0 ? (
             <div className={styles.emptyState}>
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.35,marginBottom:12}}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{opacity:.35,marginBottom:12}}>
                 <rect x="6" y="10" width="36" height="32" rx="4" stroke="currentColor" strokeWidth="2" fill="none"/>
                 <path d="M6 18h36" stroke="currentColor" strokeWidth="2"/>
                 <path d="M16 6v8M32 6v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -115,6 +125,9 @@ export default function Dashboard({ events, onNavigate }) {
             const dayDiff = Math.round((d - now) / 86400000)
             const label = dayDiff === 0 ? 'היום' : dayDiff === 1 ? 'מחר' : `בעוד ${dayDiff} ימים`
             const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+            const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+            const allPaid = total > 0 && paid === total
+            const partPaid = paid > 0 && paid < total
             return (
               <div key={ev.id} className={styles.upcomingRow}>
                 <div>
@@ -128,6 +141,8 @@ export default function Dashboard({ events, onNavigate }) {
                 <div className={styles.upcomingRight}>
                   <span className={`${styles.dayLabel} ${dayDiff === 0 ? styles.dayLabelToday : ''}`}>{label}</span>
                   <span className={styles.upcomingTotal}>₪{total.toLocaleString('he-IL')}</span>
+                  {allPaid && <span className={styles.paidTag}>✓ שולם</span>}
+                  {partPaid && <span className={styles.partPaidTag}>חלקי</span>}
                 </div>
               </div>
             )
@@ -142,11 +157,9 @@ export default function Dashboard({ events, onNavigate }) {
           </div>
           {topWorkers.length === 0 ? (
             <div className={styles.emptyState}>
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style={{opacity:.35,marginBottom:12}}>
+              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{opacity:.35,marginBottom:12}}>
                 <circle cx="24" cy="18" r="8" stroke="currentColor" strokeWidth="2" fill="none"/>
-                <circle cx="10" cy="22" r="5" stroke="currentColor" strokeWidth="2" fill="none"/>
-                <circle cx="38" cy="22" r="5" stroke="currentColor" strokeWidth="2" fill="none"/>
-                <path d="M2 40c0-5 3.6-8 8-8M46 40c0-5-3.6-8-8-8M8 40c0-7 7-12 16-12s16 5 16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
+                <path d="M8 40c0-7 7-12 16-12s16 5 16 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none"/>
               </svg>
               <p>אין שיבוצי עובדים החודש</p>
               <button className={styles.emptyBtn} onClick={() => onNavigate('workers')}>
@@ -156,11 +169,19 @@ export default function Dashboard({ events, onNavigate }) {
           ) : topWorkers.map(([name, v], i) => (
             <div key={name} className={styles.workerRankRow}>
               <span className={styles.rank}>{i + 1}</span>
-              <div>
+              <div style={{flex:1}}>
                 <div className={styles.rankName}>{name}</div>
                 <div className={styles.rankSub}>{v.count} אירועים</div>
               </div>
-              <span className={styles.rankSalary}>₪{v.total.toLocaleString('he-IL')}</span>
+              <div className={styles.rankRight}>
+                <span className={styles.rankSalary}>₪{v.total.toLocaleString('he-IL')}</span>
+                {v.paid > 0 && v.paid < v.total && (
+                  <span className={styles.rankPaid}>שולם ₪{v.paid.toLocaleString('he-IL')}</span>
+                )}
+                {v.paid === v.total && v.total > 0 && (
+                  <span className={styles.rankPaidFull}>✓ שולם</span>
+                )}
+              </div>
             </div>
           ))}
         </div>

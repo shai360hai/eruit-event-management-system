@@ -110,13 +110,9 @@
 .rankSalary { font-size: 14px; font-weight: 600; color: var(--text); margin-right: auto; white-space: nowrap; }
 
 @media (max-width: 640px) {
-  .metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .metrics { grid-template-columns: 1fr 1fr; }
   .cols { grid-template-columns: 1fr; }
-  .metricVal { font-size: 16px; }
-  .metricIcon { width: 30px; height: 30px; font-size: 15px; }
-  .title { font-size: 20px; }
-  .card { padding: 1rem; }
-  .upcomingName { font-size: 13px; }
+  .metricVal { font-size: 17px; }
 }
 
 .emptyState {
@@ -146,3 +142,36 @@
   transition: opacity .15s;
 }
 .emptyBtn:hover { opacity: 0.85; }
+
+.paidTag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--success);
+  background: var(--success-bg);
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.partPaidTag {
+  font-size: 11px;
+  color: #e67e22;
+  background: #fef3e2;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+.rankRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.rankPaid {
+  font-size: 11px;
+  color: #e67e22;
+}
+.rankPaidFull {
+  font-size: 11px;
+  color: var(--success);
+  font-weight: 600;
+}
+.metricSuccess { background: var(--success-bg); border-color: var(--success); }
+.metricDanger { background: var(--danger-bg); border-color: var(--danger); }

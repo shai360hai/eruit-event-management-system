@@ -43,7 +43,11 @@ export default function EventsList({ events, onEdit, onAdd }) {
                 <div key={ev.id} className={styles.card} onClick={() => onEdit(ev)}>
                   <div className={styles.cardTop}>
                     <span className={styles.eventName}>{ev.name}</span>
-                    <span className={styles.eventTotal}>₪{total.toLocaleString('he-IL')}</span>
+                    <div className={styles.eventTotalWrap}>
+                      <span className={styles.eventTotal}>₪{total.toLocaleString('he-IL')}</span>
+                      {allPaid && total > 0 && <span className={styles.paidBadge}>✓ שולם</span>}
+                      {partPaid && <span className={styles.partPaidBadge}>שולם ₪{paid.toLocaleString('he-IL')}</span>}
+                    </div>
                   </div>
                   <div className={styles.cardMeta}>
                     {ev.location && <span><i className="ti ti-map-pin" /> {ev.location}</span>}

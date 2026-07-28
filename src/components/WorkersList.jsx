@@ -19,6 +19,7 @@ export default function WorkersList({ events }) {
   const [saving, setSaving] = useState(false)
   const [editId, setEditId] = useState(null)
   const [unpaidOnly, setUnpaidOnly] = useState(false)
+  const [sortBy, setSortBy] = useState('owed')
 
   useEffect(() => { fetchWorkers() }, [])
 
@@ -94,7 +95,10 @@ export default function WorkersList({ events }) {
 
   if (unpaidOnly) filtered = filtered.filter(w => w._owed > 0)
 
-  filtered.sort((a, b) => b._owed - a._owed || b._total - a._total || a.name.localeCompare(b.name, 'he'))
+  if (sortBy === 'owed')    filtered.sort((a, b) => b._owed - a._owed || b._total - a._total || a.name.localeCompare(b.name, 'he'))
+  else if (sortBy === 'salary') filtered.sort((a, b) => b._total - a._total || a.name.localeCompare(b.name, 'he'))
+  else if (sortBy === 'name')   filtered.sort((a, b) => a.name.localeCompare(b.name, 'he'))
+  else if (sortBy === 'role')   filtered.sort((a, b) => (a.role||'').localeCompare(b.role||'','he') || a.name.localeCompare(b.name,'he'))
 
   const totalOwedAll = filtered.reduce((s, w) => s + w._owed, 0)
 
@@ -127,6 +131,12 @@ export default function WorkersList({ events }) {
         <h1 className={styles.pageTitle}>עובדים</h1>
         <div className={styles.headerActions}>
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="חיפוש..." className={styles.searchInput} />
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
+            <option value="owed">לפי חוב</option>
+            <option value="salary">לפי שכר</option>
+            <option value="name">לפי שם</option>
+            <option value="role">לפי תפקיד</option>
+          </select>
           <select value={month} onChange={e => setMonth(e.target.value)}>
             <option value="">כל החודשים</option>
             {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
