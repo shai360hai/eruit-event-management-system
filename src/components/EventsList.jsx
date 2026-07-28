@@ -37,6 +37,9 @@ export default function EventsList({ events, onEdit, onAdd }) {
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .map(ev => {
               const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+              const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+              const allPaid = total > 0 && paid === total
+              const partPaid = paid > 0 && paid < total
               const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
               const wc = (ev.workers || []).length
               return (
