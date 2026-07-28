@@ -3,7 +3,7 @@ import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import styles from './EventForm.module.css'
 
-export default function EventForm({ event, prefillDate, onSave, onDelete, onCancel, loading }) {
+export default function EventForm({ event, prefillDate, duplicateData, onSave, onDelete, onCancel, loading }) {
   const { isAdmin } = useAuth()
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
@@ -33,10 +33,16 @@ export default function EventForm({ event, prefillDate, onSave, onDelete, onCanc
       setWorkers(event.workers?.length
         ? event.workers.map(w => ({ ...w, _id: w._id || Date.now() + Math.random() }))
         : [])
+    } else if (duplicateData) {
+      setName(duplicateData.name || '')
+      setLocation(duplicateData.location || '')
+      setDate('')
+      setTime(duplicateData.time || '')
+      setWorkers((duplicateData.workers || []).map(w => ({ ...w, _id: Date.now() + Math.random() })))
     } else {
       setName(''); setLocation(''); setDate(prefillDate || ''); setTime(''); setWorkers([])
     }
-  }, [event, prefillDate])
+  }, [event, prefillDate, duplicateData])
 
   const total = workers.reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
 

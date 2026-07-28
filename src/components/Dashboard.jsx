@@ -1,18 +1,11 @@
-import { useState, useEffect } from 'react'
-import { supabase } from '../supabase'
 import styles from './Dashboard.module.css'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
 export default function Dashboard({ events, onNavigate }) {
-  const [payments, setPayments] = useState([])
   const now = new Date()
   const thisMonth = now.getMonth() + 1
   const monthName = MONTHS[thisMonth]
-
-  useEffect(() => {
-    supabase.from('payments').select('*, events(date)').then(({ data }) => setPayments(data || []))
-  }, [])
 
   // This month events
   const monthEvents = events.filter(e => {

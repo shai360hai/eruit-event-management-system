@@ -251,3 +251,15 @@
   color: var(--text-hint);
   margin-bottom: 10px;
 }
+
+.monthTitleWrap { display: flex; align-items: center; gap: 10px; }
+.todayBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 3px 12px;
+  font-size: 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.todayBtn:hover { border-color: var(--border-strong); color: var(--text); }

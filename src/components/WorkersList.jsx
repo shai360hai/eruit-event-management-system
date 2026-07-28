@@ -230,7 +230,19 @@ export default function WorkersList({ events }) {
                     {w.name}
                   </span>
                   <span className={styles.muted}>{w.role || '—'}</span>
-                  <span className={styles.muted}>{w.phone || '—'}</span>
+                  <span className={styles.muted}>
+                    {w.phone ? (
+                      <a
+                        href={`https://wa.me/972${w.phone.replace(/[^0-9]/g, '').replace(/^0/, '')}`}
+                        target="_blank" rel="noreferrer"
+                        className={styles.waLink}
+                        onClick={e => e.stopPropagation()}
+                        title="שלח וואטסאפ"
+                      >
+                        <i className="ti ti-brand-whatsapp" /> {w.phone}
+                      </a>
+                    ) : '—'}
+                  </span>
                   <span className={styles.muted}>
                     {w.default_salary ? `₪${Number(w.default_salary).toLocaleString('he-IL')}` : '—'}
                   </span>

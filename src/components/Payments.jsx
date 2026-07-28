@@ -1,92 +1,92 @@
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../supabase'
-import { togglePayment } from '../utils/payments'
+import { useState } from 'react'
+import { toggleWorkerPaid, updateEvent } from '../api'
 import styles from './Payments.module.css'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
-export default function Payments() {
-  const [payments, setPayments] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function Payments({ events, onEventsChange }) {
   const [month, setMonth] = useState(String(new Date().getMonth() + 1))
-  const [filterPaid, setFilterPaid] = useState('all') // all | paid | unpaid
+  const [filterPaid, setFilterPaid] = useState('all')
   const [search, setSearch] = useState('')
-  const [toggling, setToggling] = useState(null)
+  const [busy, setBusy] = useState(null)
 
-  const fetchPayments = useCallback(async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('payments')
-      .select('*, events(name, date, location)')
-      .order('created_at', { ascending: false })
-    if (!error) setPayments(data || [])
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetchPayments() }, [fetchPayments])
-
-  async function handlePayAll(eventPayments) {
-    const unpaid = eventPayments.filter(p => !p.paid)
-    if (!unpaid.length) return
-    if (!confirm(`לסמן ${unpaid.length} עובדים כשולם?`)) return
-    await Promise.all(unpaid.map(p => togglePayment(p.id, true)))
-    setPayments(ps => ps.map(x =>
-      unpaid.find(u => u.id === x.id)
-        ? { ...x, paid: true, paid_at: new Date().toISOString() }
-        : x
-    ))
-  }
-
-  async function handleToggle(p) {
-    setToggling(p.id)
-    try {
-      await togglePayment(p.id, !p.paid)
-      setPayments(ps => ps.map(x => x.id === p.id
-        ? { ...x, paid: !p.paid, paid_at: !p.paid ? new Date().toISOString() : null }
-        : x
-      ))
-    } catch (e) {
-      alert('שגיאה: ' + e.message)
-    }
-    setToggling(null)
-  }
+  // ── Derive all payment rows from events (single source of truth) ──
+  let rows = []
+  events.forEach(ev => {
+    const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
+    ;(ev.workers || []).forEach((w, idx) => {
+      if (!w.name) return
+      rows.push({
+        key: ev.id + ':' + idx,
+        event: ev,
+        workerIdx: idx,
+        workerName: w.name,
+        amount: parseFloat(w.salary) || 0,
+        paid: !!w.paid,
+        paidAt: w.paid_at || null,
+        month: evMonth
+      })
+    })
+  })
 
   // Filter
-  let filtered = payments.filter(p => {
-    if (month) {
-      const d = p.events?.date
-      if (!d || new Date(d + 'T00:00:00').getMonth() + 1 !== parseInt(month)) return false
-    }
-    if (filterPaid === 'paid' && !p.paid) return false
-    if (filterPaid === 'unpaid' && p.paid) return false
-    if (search.trim() && !p.worker_name.includes(search.trim()) && !p.events?.name?.includes(search.trim())) return false
+  let filtered = rows.filter(r => {
+    if (month && r.month !== parseInt(month)) return false
+    if (filterPaid === 'paid' && !r.paid) return false
+    if (filterPaid === 'unpaid' && r.paid) return false
+    if (search.trim() && !r.workerName.includes(search.trim()) && !(r.event.name || '').includes(search.trim())) return false
     return true
   })
 
-  // Sort: unpaid first, then by event date desc
-  filtered.sort((a, b) => {
-    if (a.paid !== b.paid) return a.paid ? 1 : -1
-    return new Date(b.events?.date || 0) - new Date(a.events?.date || 0)
-  })
-
   // Totals
-  const totalOwed = filtered.reduce((s, p) => s + (!p.paid ? p.amount : 0), 0)
-  const totalPaid = filtered.reduce((s, p) => s + (p.paid ? p.amount : 0), 0)
-  const totalAll = filtered.reduce((s, p) => s + p.amount, 0)
+  const totalOwed = filtered.reduce((s, r) => s + (!r.paid ? r.amount : 0), 0)
+  const totalPaid = filtered.reduce((s, r) => s + (r.paid ? r.amount : 0), 0)
+  const totalAll  = totalOwed + totalPaid
+  const openCount = filtered.filter(r => !r.paid).length
 
   // Group by event
   const byEvent = {}
-  filtered.forEach(p => {
-    const key = p.event_id
-    if (!byEvent[key]) byEvent[key] = { name: p.events?.name || '—', date: p.events?.date, location: p.events?.location, payments: [] }
-    byEvent[key].payments.push(p)
+  filtered.forEach(r => {
+    if (!byEvent[r.event.id]) byEvent[r.event.id] = { event: r.event, rows: [] }
+    byEvent[r.event.id].rows.push(r)
   })
-  const events = Object.values(byEvent).sort((a, b) => {
-    const aUnpaid = a.payments.some(p => !p.paid)
-    const bUnpaid = b.payments.some(p => !p.paid)
+  const grouped = Object.values(byEvent).sort((a, b) => {
+    const aUnpaid = a.rows.some(r => !r.paid)
+    const bUnpaid = b.rows.some(r => !r.paid)
     if (aUnpaid !== bUnpaid) return aUnpaid ? -1 : 1
-    return new Date(b.date || 0) - new Date(a.date || 0)
+    return new Date(b.event.date || 0) - new Date(a.event.date || 0)
   })
+
+  async function handleToggle(r) {
+    setBusy(r.key)
+    try {
+      const updated = await toggleWorkerPaid(r.event, r.workerIdx, !r.paid)
+      onEventsChange(updated)
+    } catch (e) {
+      alert('שגיאה: ' + e.message)
+    }
+    setBusy(null)
+  }
+
+  async function handlePayAll(group) {
+    const unpaid = group.rows.filter(r => !r.paid)
+    if (!unpaid.length) return
+    if (!confirm(`לסמן ${unpaid.length} עובדים כשולם?`)) return
+    setBusy('all:' + group.event.id)
+    try {
+      const now = new Date().toISOString()
+      const updatedWorkers = (group.event.workers || []).map((w, i) =>
+        unpaid.find(r => r.workerIdx === i)
+          ? { ...w, paid: true, paid_at: now }
+          : w
+      )
+      const updated = await updateEvent(group.event.id, { ...group.event, workers: updatedWorkers })
+      onEventsChange(updated)
+    } catch (e) {
+      alert('שגיאה: ' + e.message)
+    }
+    setBusy(null)
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -106,7 +106,6 @@ export default function Payments() {
         </div>
       </div>
 
-      {/* Summary metrics */}
       <div className={styles.metrics}>
         <div className={`${styles.metric} ${styles.metricDanger}`}>
           <div className={styles.metricVal}>₪{totalOwed.toLocaleString('he-IL')}</div>
@@ -121,26 +120,26 @@ export default function Payments() {
           <div className={styles.metricLbl}>סה"כ</div>
         </div>
         <div className={styles.metric}>
-          <div className={styles.metricVal}>{filtered.filter(p => !p.paid).length}</div>
+          <div className={styles.metricVal}>{openCount}</div>
           <div className={styles.metricLbl}>תשלומים פתוחים</div>
         </div>
       </div>
 
-      {loading ? (
-        <div className={styles.empty}>טוען...</div>
-      ) : events.length === 0 ? (
+      {grouped.length === 0 ? (
         <div className={styles.empty}>
           <i className="ti ti-receipt-off" style={{ fontSize: 36, display: 'block', marginBottom: 10 }} />
           אין תשלומים להציג
         </div>
-      ) : events.map(ev => {
-        const evTotal = ev.payments.reduce((s, p) => s + p.amount, 0)
-        const evOwed = ev.payments.reduce((s, p) => s + (!p.paid ? p.amount : 0), 0)
-        const allPaid = ev.payments.every(p => p.paid)
+      ) : grouped.map(group => {
+        const ev = group.event
+        const evTotal = group.rows.reduce((s, r) => s + r.amount, 0)
+        const evOwed  = group.rows.reduce((s, r) => s + (!r.paid ? r.amount : 0), 0)
+        const allPaid = group.rows.every(r => r.paid)
         const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
+        const isBusyAll = busy === 'all:' + ev.id
 
         return (
-          <div key={ev.name + ev.date} className={`${styles.eventCard} ${allPaid ? styles.eventCardDone : ''}`}>
+          <div key={ev.id} className={`${styles.eventCard} ${allPaid ? styles.eventCardDone : ''}`}>
             <div className={styles.eventCardHeader}>
               <div>
                 <div className={styles.eventCardTitle}>{ev.name}</div>
@@ -154,32 +153,31 @@ export default function Payments() {
                 {allPaid && <span className={styles.paidBadge}><i className="ti ti-check" /> שולם הכל</span>}
                 <span className={styles.totalLabel}>סה"כ ₪{evTotal.toLocaleString('he-IL')}</span>
                 {!allPaid && (
-                  <button className={styles.payAllBtn} onClick={() => handlePayAll(ev.payments)}>
-                    <i className="ti ti-checks" /> שלם הכל
+                  <button className={styles.payAllBtn} onClick={() => handlePayAll(group)} disabled={isBusyAll}>
+                    {isBusyAll ? '...' : <><i className="ti ti-checks" /> שלם הכל</>}
                   </button>
                 )}
               </div>
             </div>
 
             <div className={styles.paymentList}>
-              {ev.payments.map(p => (
-                <div key={p.id} className={`${styles.paymentRow} ${p.paid ? styles.paymentRowPaid : ''}`}>
-                  <span className={styles.workerName}>{p.worker_name}</span>
-                  <span className={styles.amount}>₪{p.amount.toLocaleString('he-IL')}</span>
-                  {p.paid && p.paid_at && (
-                    <span className={styles.paidAt}>
-                      שולם {new Date(p.paid_at).toLocaleDateString('he-IL')}
-                    </span>
+              {group.rows.map(r => (
+                <div key={r.key} className={`${styles.paymentRow} ${r.paid ? styles.paymentRowPaid : ''}`}>
+                  <span className={styles.workerName}>{r.workerName}</span>
+                  <span className={styles.amount}>₪{r.amount.toLocaleString('he-IL')}</span>
+                  {r.paid && r.paidAt && (
+                    <span className={styles.paidAt}>שולם {new Date(r.paidAt).toLocaleDateString('he-IL')}</span>
                   )}
-                  {!p.paid && <span className={styles.pendingLabel}>ממתין</span>}
+                  {r.paid && !r.paidAt && <span className={styles.paidAt}>שולם</span>}
+                  {!r.paid && <span className={styles.pendingLabel}>ממתין</span>}
                   <button
-                    className={`${styles.toggleBtn} ${p.paid ? styles.toggleBtnPaid : styles.toggleBtnUnpaid}`}
-                    onClick={() => handleToggle(p)}
-                    disabled={toggling === p.id}
+                    className={`${styles.toggleBtn} ${r.paid ? styles.toggleBtnPaid : styles.toggleBtnUnpaid}`}
+                    onClick={() => handleToggle(r)}
+                    disabled={busy === r.key}
                   >
-                    {toggling === p.id
+                    {busy === r.key
                       ? '...'
-                      : p.paid
+                      : r.paid
                         ? <><i className="ti ti-x" /> בטל</>
                         : <><i className="ti ti-check" /> שולם</>
                     }

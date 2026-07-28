@@ -1,19 +1,8 @@
 import { supabase } from './supabase'
 
-async function syncPayments(eventId, workers) {
-  if (!workers?.length) return
-  const rows = workers
-    .filter(w => w.name?.trim())
-    .map(w => ({
-      event_id: eventId,
-      worker_name: w.name.trim(),
-      amount: parseFloat(w.salary) || 0,
-      paid: false
-    }))
-  if (!rows.length) return
-  await supabase.from('payments')
-    .upsert(rows, { onConflict: 'event_id,worker_name', ignoreDuplicates: true })
-}
+// Single source of truth: the workers JSON on each event row.
+// Each worker: { name, role, phone, salary, paid, paid_at }
+// The old `payments` table is no longer written to or read.
 
 export async function getEvents() {
   const { data, error } = await supabase
@@ -40,9 +29,7 @@ export async function createEvent(eventData) {
     .select()
     .single()
   if (error) throw new Error(error.message)
-  const ev = { ...data, workers: JSON.parse(data.workers || '[]') }
-  await syncPayments(ev.id, ev.workers)
-  return ev
+  return { ...data, workers: JSON.parse(data.workers || '[]') }
 }
 
 export async function updateEvent(id, eventData) {
@@ -59,9 +46,17 @@ export async function updateEvent(id, eventData) {
     .select()
     .single()
   if (error) throw new Error(error.message)
-  const ev = { ...data, workers: JSON.parse(data.workers || '[]') }
-  await syncPayments(ev.id, ev.workers)
-  return ev
+  return { ...data, workers: JSON.parse(data.workers || '[]') }
+}
+
+// Toggle a single worker's paid state on an event. Returns updated event.
+export async function toggleWorkerPaid(event, workerIdx, paid) {
+  const updatedWorkers = (event.workers || []).map((w, i) =>
+    i === workerIdx
+      ? { ...w, paid, paid_at: paid ? new Date().toISOString() : null }
+      : w
+  )
+  return updateEvent(event.id, { ...event, workers: updatedWorkers })
 }
 
 export async function deleteEvent(id) {

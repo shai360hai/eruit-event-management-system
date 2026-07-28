@@ -190,3 +190,13 @@
 }
 
 .sortSelect { width: auto; min-width: 120px; }
+
+.waLink {
+  color: #25d366;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 13px;
+}
+.waLink:hover { text-decoration: underline; }

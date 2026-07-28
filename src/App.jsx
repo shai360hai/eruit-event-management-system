@@ -19,9 +19,10 @@ function Shell() {
   const [view, setView] = useState('dashboard')
   const [editEvent, setEditEvent] = useState(null)
   const [prefillDate, setPrefillDate] = useState('')
+  const [duplicateData, setDuplicateData] = useState(null)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
-  const [unpaidTotal, setUnpaidTotal] = useState(0)
+
 
   useEffect(() => {
     if (!user) return
@@ -30,14 +31,11 @@ function Shell() {
       .catch(() => setEvents([]))
       .finally(() => setFetching(false))
 
-    // Fetch unpaid total for badge
-    import('./utils/payments').then(({ getAllPayments }) => {
-      getAllPayments().then(ps => {
-        const total = ps.filter(p => !p.paid).reduce((s, p) => s + (p.amount || 0), 0)
-        setUnpaidTotal(total)
-      }).catch(() => {})
-    })
   }, [user])
+
+  // Unpaid total derived live from events (single source of truth)
+  const unpaidTotal = events.reduce((s, e) =>
+    s + (e.workers || []).filter(w => !w.paid).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
 
   if (authLoading) return (
     <div className={styles.centered}>
@@ -60,6 +58,7 @@ function Shell() {
       setView('dashboard')
       setEditEvent(null)
       setPrefillDate('')
+      setDuplicateData(null)
     } catch (err) {
       alert('שגיאה בשמירה: ' + err.message)
     } finally {
@@ -85,7 +84,19 @@ function Shell() {
   function openAdd() { setEditEvent(null); setView('form') }
   function openAddWithDate(date) { setEditEvent(null); setPrefillDate(date); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
-  function cancel() { setEditEvent(null); setPrefillDate(''); setView('dashboard') }
+  function duplicateEvent(ev) {
+    // Open form as NEW event with same data (no id), date cleared, all unpaid
+    setEditEvent(null)
+    setPrefillDate('')
+    setDuplicateData({
+      name: ev.name + ' (עותק)',
+      location: ev.location,
+      time: ev.time,
+      workers: (ev.workers || []).map(w => ({ ...w, paid: false, paid_at: null }))
+    })
+    setView('form')
+  }
+  function cancel() { setEditEvent(null); setPrefillDate(''); setDuplicateData(null); setView('dashboard') }
 
   const NAV = [
     { id: 'dashboard', icon: 'ti-home', label: 'בית' },
@@ -144,15 +155,17 @@ function Shell() {
         ) : view === 'dashboard' ? (
           <Dashboard events={events} onNavigate={v => { setView(v); setEditEvent(null) }} />
         ) : view === 'form' ? (
-          <EventForm event={editEvent} prefillDate={prefillDate} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
+          <EventForm event={editEvent} prefillDate={prefillDate} duplicateData={duplicateData} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (
           <Calendar events={events} onEventClick={openEdit} onAddEvent={openAddWithDate} />
         ) : view === 'list' ? (
-          <EventsList events={events} onEdit={openEdit} onAdd={openAdd} />
+          <EventsList events={events} onEdit={openEdit} onAdd={openAdd} onDuplicate={duplicateEvent} />
         ) : view === 'workers' ? (
           <WorkersList events={events} />
         ) : view === 'payments' ? (
-          <Payments />
+          <Payments events={events} onEventsChange={updated => {
+            setEvents(es => es.map(e => e.id === updated.id ? updated : e))
+          }} />
         ) : (
           <Summary events={events} />
         )}

@@ -88,3 +88,23 @@
   padding: 2px 8px;
   border-radius: 10px;
 }
+
+.headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.searchInput { width: 180px; }
+.monthSelect { width: auto; min-width: 120px; }
+.dupBtn {
+  background: transparent;
+  border: none;
+  color: var(--text-hint);
+  font-size: 14px;
+  padding: 2px 6px;
+  margin-right: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.dupBtn:hover { color: var(--text); background: var(--bg); }
+
+@media (max-width: 640px) {
+  .searchInput { width: 100%; }
+  .headerActions { width: 100%; }
+}

@@ -20,6 +20,11 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
     else setMonth(m => m + 1)
     setSelected(null)
   }
+  function goToday() {
+    setYear(today.getFullYear())
+    setMonth(today.getMonth())
+    setSelected(today.getDate())
+  }
 
   // Build calendar grid
   const firstDay = new Date(year, month, 1).getDay() // 0=Sun
@@ -51,7 +56,10 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <button className={styles.navBtn} onClick={nextMonth}><i className="ti ti-chevron-right" /></button>
-        <span className={styles.monthTitle}>{MONTHS[month]} {year}</span>
+        <div className={styles.monthTitleWrap}>
+          <span className={styles.monthTitle}>{MONTHS[month]} {year}</span>
+          <button className={styles.todayBtn} onClick={goToday}>היום</button>
+        </div>
         <button className={styles.navBtn} onClick={prevMonth}><i className="ti ti-chevron-left" /></button>
       </div>
 

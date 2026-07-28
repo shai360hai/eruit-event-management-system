@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import styles from './EventsList.module.css'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
-export default function EventsList({ events, onEdit, onAdd }) {
+export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
+  const [search, setSearch] = useState('')
+  const [monthFilter, setMonthFilter] = useState('')
   const [filterMonth, setFilterMonth] = [
     typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('m') || '') : '',
     () => {}
@@ -12,9 +15,21 @@ export default function EventsList({ events, onEdit, onAdd }) {
     <div className={styles.wrapper}>
       <div className={styles.header}>
         <h1 className={styles.pageTitle}>אירועים</h1>
-        <button className={styles.addBtn} onClick={onAdd}>
-          <i className="ti ti-plus" /> אירוע חדש
-        </button>
+        <div className={styles.headerActions}>
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="חיפוש אירוע / מיקום..."
+            className={styles.searchInput}
+          />
+          <select value={monthFilter} onChange={e => setMonthFilter(e.target.value)} className={styles.monthSelect}>
+            <option value="">כל החודשים</option>
+            {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+          </select>
+          <button className={styles.addBtn} onClick={onAdd}>
+            <i className="ti ti-plus" /> אירוע חדש
+          </button>
+        </div>
       </div>
 
       {events.length === 0 ? (
@@ -34,6 +49,11 @@ export default function EventsList({ events, onEdit, onAdd }) {
       ) : (
         <div className={styles.list}>
           {[...events]
+            .filter(ev => {
+              if (monthFilter && (!ev.date || new Date(ev.date + 'T00:00:00').getMonth() + 1 !== parseInt(monthFilter))) return false
+              if (search.trim() && !(ev.name || '').includes(search.trim()) && !(ev.location || '').includes(search.trim())) return false
+              return true
+            })
             .sort((a, b) => new Date(a.date) - new Date(b.date))
             .map(ev => {
               const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
@@ -45,7 +65,14 @@ export default function EventsList({ events, onEdit, onAdd }) {
               return (
                 <div key={ev.id} className={styles.card} onClick={() => onEdit(ev)}>
                   <div className={styles.cardTop}>
-                    <span className={styles.eventName}>{ev.name}</span>
+                    <span className={styles.eventName}>
+                      {ev.name}
+                      <button
+                        className={styles.dupBtn}
+                        title="שכפל אירוע"
+                        onClick={e => { e.stopPropagation(); onDuplicate(ev) }}
+                      ><i className="ti ti-copy" /></button>
+                    </span>
                     <div className={styles.eventTotalWrap}>
                       <span className={styles.eventTotal}>₪{total.toLocaleString('he-IL')}</span>
                       {allPaid && total > 0 && <span className={styles.paidBadge}>✓ שולם</span>}
