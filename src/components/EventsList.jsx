@@ -88,6 +88,7 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
                     </div>
                   </div>
                   <div className={styles.cardMeta}>
+                    {ev.event_type && <span className={styles.typeBadge}>{ev.event_type}</span>}
                     {ev.location && <span><i className="ti ti-map-pin" /> {ev.location}</span>}
                     <span><i className="ti ti-calendar" /> {d}</span>
                     {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}

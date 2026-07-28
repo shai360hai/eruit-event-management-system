@@ -249,3 +249,33 @@
 @media (max-width: 640px) {
   .newWorkerGrid { grid-template-columns: 1fr 1fr; }
 }
+
+.locationRow {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.locationRow select { flex: 1; }
+
+.addLocationBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.addLocationBtn:hover { border-color: var(--border-strong); color: var(--text); }
+
+.addLocationRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.addLocationRow input { flex: 1; }
+.addLocationRow button { padding: 8px 16px; flex-shrink: 0; }

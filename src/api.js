@@ -22,6 +22,7 @@ export async function createEvent(eventData) {
     .insert([{
       name: eventData.name,
       location: eventData.location,
+      event_type: eventData.event_type || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])
@@ -38,6 +39,7 @@ export async function updateEvent(id, eventData) {
     .update({
       name: eventData.name,
       location: eventData.location,
+      event_type: eventData.event_type || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])

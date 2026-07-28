@@ -7,6 +7,11 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   const { isAdmin } = useAuth()
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
+  const [eventType, setEventType] = useState('')
+  const [locations, setLocations] = useState([])
+  const [showAddLocation, setShowAddLocation] = useState(false)
+  const [newLocation, setNewLocation] = useState('')
+  const [savingLocation, setSavingLocation] = useState(false)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [workers, setWorkers] = useState([])
@@ -22,12 +27,16 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
     return supabase.from('workers').select('*').order('name').then(({ data }) => setAllWorkers(data || []))
   }
 
-  useEffect(() => { refreshWorkers() }, [])
+  useEffect(() => {
+    refreshWorkers()
+    supabase.from('locations').select('*').order('name').then(({ data }) => setLocations(data || []))
+  }, [])
 
   useEffect(() => {
     if (event && event.id) {
       setName(event.name || '')
       setLocation(event.location || '')
+      setEventType(event.event_type || '')
       setDate(event.date || '')
       setTime(event.time || '')
       setWorkers(event.workers?.length
@@ -36,11 +45,12 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
     } else if (duplicateData) {
       setName(duplicateData.name || '')
       setLocation(duplicateData.location || '')
+      setEventType(duplicateData.event_type || '')
       setDate('')
       setTime(duplicateData.time || '')
       setWorkers((duplicateData.workers || []).map(w => ({ ...w, _id: Date.now() + Math.random() })))
     } else {
-      setName(''); setLocation(''); setDate(prefillDate || ''); setTime(''); setWorkers([])
+      setName(''); setLocation(''); setEventType(''); setDate(prefillDate || ''); setTime(''); setWorkers([])
     }
   }, [event, prefillDate, duplicateData])
 
@@ -58,6 +68,22 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       paid: false
     }])
     setShowPicker(false)
+  }
+
+  async function handleAddLocation() {
+    if (!newLocation.trim()) return
+    setSavingLocation(true)
+    const { data, error } = await supabase.from('locations')
+      .insert([{ name: newLocation.trim() }]).select().single()
+    if (!error && data) {
+      setLocations(ls => [...ls, data].sort((a, b) => a.name.localeCompare(b.name, 'he')))
+      setLocation(data.name)
+    } else if (error) {
+      alert('שגיאה: ' + error.message)
+    }
+    setNewLocation('')
+    setShowAddLocation(false)
+    setSavingLocation(false)
   }
 
   async function handleAddNewWorker() {
@@ -96,7 +122,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   async function handleSave() {
     if (!name.trim()) { alert('נא להזין שם אירוע'); return }
     const cleanWorkers = workers.filter(w => w.name.trim()).map(({ _id, ...w }) => w)
-    onSave({ name: name.trim(), location: location.trim(), date, time, workers: cleanWorkers })
+    onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, workers: cleanWorkers })
   }
 
   const filteredAllWorkers = allWorkers.filter(w =>
@@ -114,9 +140,47 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
           <input value={name} onChange={e => setName(e.target.value)} placeholder="שם האירוע" />
         </div>
         <div className={styles.field}>
-          <label>מיקום</label>
-          <input value={location} onChange={e => setLocation(e.target.value)} placeholder="מיקום האירוע" />
+          <label>סוג האירוע</label>
+          <input value={eventType} onChange={e => setEventType(e.target.value)} placeholder="חתונה / בר מצווה / כנס..." />
         </div>
+      </div>
+
+      <div className={styles.grid2}>
+        <div className={styles.field}>
+          <label>מיקום</label>
+          <div className={styles.locationRow}>
+            <select value={location} onChange={e => setLocation(e.target.value)}>
+              <option value="">בחר מיקום</option>
+              {locations.map(l => <option key={l.id} value={l.name}>{l.name}</option>)}
+              {location && !locations.find(l => l.name === location) && (
+                <option value={location}>{location}</option>
+              )}
+            </select>
+            {isAdmin && (
+              <button
+                type="button"
+                className={styles.addLocationBtn}
+                onClick={() => setShowAddLocation(s => !s)}
+                title="הוסף מיקום חדש"
+              ><i className="ti ti-plus" /></button>
+            )}
+          </div>
+          {showAddLocation && isAdmin && (
+            <div className={styles.addLocationRow}>
+              <input
+                value={newLocation}
+                onChange={e => setNewLocation(e.target.value)}
+                placeholder="שם מיקום חדש"
+                autoFocus
+                onKeyDown={e => { if (e.key === 'Enter') handleAddLocation() }}
+              />
+              <button type="button" className={styles.saveBtn} onClick={handleAddLocation} disabled={savingLocation}>
+                {savingLocation ? '...' : 'הוסף'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div />
       </div>
 
       <div className={styles.grid2}>
