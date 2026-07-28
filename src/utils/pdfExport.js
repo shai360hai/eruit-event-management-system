@@ -127,4 +127,58 @@ export function exportMonthlyAllWorkersPdf(workersWithTotals, monthLabel, grandT
   doc.save(`סיכום-חודשי-${monthLabel || 'all'}.pdf`)
 }
 
+
+export function exportEventsPdf(eventsList, filterLabel) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  ensureFonts(doc)
+
+  addHeader(doc, 'דוח אירועים', filterLabel)
+
+  const head = [['סטטוס', 'סה"כ שכר', 'עובדים', 'שעה', 'תאריך', 'מיקום', 'שם אירוע'].map(rtl)]
+  const body = eventsList.map(ev => {
+    const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+    const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+    const status = total === 0 ? '—' : paid === total ? 'שולם' : paid > 0 ? 'חלקי' : 'ממתין'
+    const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
+    return [
+      rtl(status),
+      `\u20AA${total.toLocaleString('he-IL')}`,
+      String((ev.workers || []).length),
+      ev.time || '—',
+      rtl(d),
+      rtl(ev.location || '—'),
+      rtl(ev.name || '—')
+    ]
+  })
+
+  const grandTotal = eventsList.reduce((s, ev) =>
+    s + (ev.workers || []).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
+  const grandPaid = eventsList.reduce((s, ev) =>
+    s + (ev.workers || []).filter(w => w.paid).reduce((ss, w) => ss + (parseFloat(w.salary) || 0), 0), 0)
+
+  autoTable(doc, {
+    startY: 38,
+    head,
+    body,
+    styles: { font: 'Hebrew', halign: 'right', fontSize: 10, cellPadding: 2.5 },
+    headStyles: { font: 'Hebrew', fontStyle: 'bold', fillColor: [26, 25, 23], textColor: 255, halign: 'right' },
+    columnStyles: { 0: { halign: 'center' }, 1: { halign: 'left' }, 2: { halign: 'center' }, 3: { halign: 'center' } },
+    margin: { left: 10, right: 10 },
+    theme: 'grid'
+  })
+
+  const finalY = doc.lastAutoTable.finalY || 38
+  const pageWidth = doc.internal.pageSize.getWidth()
+  doc.setFont('Hebrew', 'bold')
+  doc.setFontSize(12)
+  doc.text(rtl(`${eventsList.length} אירועים · סה"כ: \u20AA${grandTotal.toLocaleString('he-IL')} · שולם: \u20AA${grandPaid.toLocaleString('he-IL')} · נותר: \u20AA${(grandTotal - grandPaid).toLocaleString('he-IL')}`), pageWidth - 14, finalY + 12, { align: 'right' })
+
+  doc.setFont('Hebrew', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(150, 150, 150)
+  doc.text(rtl(`הופק · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
+
+  doc.save(`אירועים-${filterLabel || 'הכל'}.pdf`)
+}
+
 export { MONTHS }

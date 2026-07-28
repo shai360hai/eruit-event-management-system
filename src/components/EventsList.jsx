@@ -1,15 +1,27 @@
 import { useState } from 'react'
 import styles from './EventsList.module.css'
+import { exportEventsPdf } from '../utils/pdfExport'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
 export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
   const [search, setSearch] = useState('')
   const [monthFilter, setMonthFilter] = useState('')
-  const [filterMonth, setFilterMonth] = [
-    typeof window !== 'undefined' ? (new URLSearchParams(window.location.search).get('m') || '') : '',
-    () => {}
-  ]
+  const visibleEvents = [...events]
+    .filter(ev => {
+      if (monthFilter && (!ev.date || new Date(ev.date + 'T00:00:00').getMonth() + 1 !== parseInt(monthFilter))) return false
+      if (search.trim() && !(ev.name || '').includes(search.trim()) && !(ev.location || '').includes(search.trim())) return false
+      return true
+    })
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+
+  function handleExportPdf() {
+    const parts = []
+    if (monthFilter) parts.push(MONTHS[parseInt(monthFilter)])
+    if (search.trim()) parts.push(`"${search.trim()}"`)
+    const label = parts.length ? parts.join(' · ') : 'כל האירועים'
+    exportEventsPdf(visibleEvents, label)
+  }
 
   return (
     <div className={styles.wrapper}>
@@ -26,6 +38,9 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
             <option value="">כל החודשים</option>
             {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>
+          <button className={styles.exportBtn} onClick={handleExportPdf} disabled={visibleEvents.length === 0}>
+            <i className="ti ti-file-type-pdf" /> ייצוא PDF
+          </button>
           <button className={styles.addBtn} onClick={onAdd}>
             <i className="ti ti-plus" /> אירוע חדש
           </button>
@@ -48,14 +63,7 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
         </div>
       ) : (
         <div className={styles.list}>
-          {[...events]
-            .filter(ev => {
-              if (monthFilter && (!ev.date || new Date(ev.date + 'T00:00:00').getMonth() + 1 !== parseInt(monthFilter))) return false
-              if (search.trim() && !(ev.name || '').includes(search.trim()) && !(ev.location || '').includes(search.trim())) return false
-              return true
-            })
-            .sort((a, b) => new Date(a.date) - new Date(b.date))
-            .map(ev => {
+          {visibleEvents.map(ev => {
               const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
               const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
               const allPaid = total > 0 && paid === total

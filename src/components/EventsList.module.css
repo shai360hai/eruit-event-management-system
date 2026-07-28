@@ -108,3 +108,19 @@
   .searchInput { width: 100%; }
   .headerActions { width: 100%; }
 }
+
+.exportBtn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 7px 14px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.exportBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.exportBtn:disabled { opacity: 0.5; cursor: not-allowed; }
