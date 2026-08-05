@@ -58,7 +58,7 @@
 }
 
 .cell, .cellEmpty {
-  min-height: 72px;
+  min-height: 84px;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   padding: 6px;
@@ -265,7 +265,7 @@
 /* ── Layout with legend sidebar ── */
 .layout {
   display: grid;
-  grid-template-columns: 1fr 200px;
+  grid-template-columns: 1fr 190px;
   gap: 16px;
   align-items: start;
 }

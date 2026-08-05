@@ -152,7 +152,7 @@ function Shell() {
         </div>
       </nav>
 
-      <main className={styles.main}>
+      <main className={`${styles.main} ${view === 'calendar' ? styles.mainWide : ''}`}>
         {fetching ? (
           <div className={styles.centered}>
             <i className="ti ti-loader-2" style={{ fontSize: 28, display: 'block', marginBottom: 8 }} />
