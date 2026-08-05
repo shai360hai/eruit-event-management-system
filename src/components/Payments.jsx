@@ -1,11 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { toggleWorkerPaid, updateEvent } from '../api'
 import styles from './Payments.module.css'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
+function usePersistedMonth(key) {
+  const [month, setMonth] = useState(() => {
+    try {
+      const s = sessionStorage.getItem(key)
+      if (s !== null) return s
+    } catch {}
+    return String(new Date().getMonth() + 1)
+  })
+  useEffect(() => {
+    try { sessionStorage.setItem(key, month) } catch {}
+  }, [month, key])
+  return [month, setMonth]
+}
+
 export default function Payments({ events, onEventsChange }) {
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
+  const [month, setMonth] = usePersistedMonth('eruit-month-payments')
   const [filterPaid, setFilterPaid] = useState('all')
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(null)

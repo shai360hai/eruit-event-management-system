@@ -7,11 +7,25 @@ import { updateEvent } from '../api'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
+function usePersistedMonth(key) {
+  const [month, setMonth] = useState(() => {
+    try {
+      const s = sessionStorage.getItem(key)
+      if (s !== null) return s
+    } catch {}
+    return String(new Date().getMonth() + 1)
+  })
+  useEffect(() => {
+    try { sessionStorage.setItem(key, month) } catch {}
+  }, [month, key])
+  return [month, setMonth]
+}
+
 export default function WorkersList({ events }) {
   const { isAdmin } = useAuth()
   const [workers, setWorkers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
+  const [month, setMonth] = usePersistedMonth('eruit-month-workers')
   const [search, setSearch] = useState('')
   const [expanded, setExpanded] = useState(null)
   const [showForm, setShowForm] = useState(false)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import styles from './Summary.module.css'
 import { exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
 
@@ -11,8 +11,22 @@ const SORT_OPTIONS = [
   { value: 'count',    label: 'לפי מספר אירועים' },
 ]
 
+function usePersistedMonth(key) {
+  const [month, setMonth] = useState(() => {
+    try {
+      const s = sessionStorage.getItem(key)
+      if (s !== null) return s
+    } catch {}
+    return String(new Date().getMonth() + 1)
+  })
+  useEffect(() => {
+    try { sessionStorage.setItem(key, month) } catch {}
+  }, [month, key])
+  return [month, setMonth]
+}
+
 export default function Summary({ events }) {
-  const [month, setMonth] = useState(String(new Date().getMonth() + 1))
+  const [month, setMonth] = usePersistedMonth('eruit-month-summary')
   const [sortBy, setSortBy] = useState('salary')
 
   const filtered = month

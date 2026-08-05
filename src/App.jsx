@@ -16,10 +16,16 @@ function Shell() {
   const { user, isAdmin, signOut, loading: authLoading } = useAuth()
   const [dark, setDark] = useDarkMode()
   const [events, setEvents] = useState([])
-  const [view, setView] = useState('dashboard')
+  const [view, setView] = useState(() => {
+    try { return sessionStorage.getItem('eruit-view') || 'dashboard' } catch { return 'dashboard' }
+  })
   const [editEvent, setEditEvent] = useState(null)
   const [prefillDate, setPrefillDate] = useState('')
   const [duplicateData, setDuplicateData] = useState(null)
+
+  useEffect(() => {
+    try { if (view !== 'form') sessionStorage.setItem('eruit-view', view) } catch {}
+  }, [view])
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
 
