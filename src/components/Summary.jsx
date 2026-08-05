@@ -42,7 +42,7 @@ export default function Summary({ events }) {
   // ── Build worker map ──
   const workerMap = {}
   filtered.forEach(ev => {
-    const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : ''
+    const d = ev.date ? (() => { const dd = new Date(ev.date + 'T00:00:00'); return `${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}/${dd.getFullYear()}` })() : ''
     ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
       const sal = parseFloat(w.salary) || 0

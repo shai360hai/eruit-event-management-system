@@ -22,14 +22,25 @@ function ensureFonts(doc) {
 }
 
 // jsPDF's base text engine is LTR and doesn't shape/reorder Hebrew (RTL) text.
-// Reversing the character order + reversing words lets it visually render correctly
-// for our purposes (simple text, no complex ligatures/diacritics).
+// We reverse the string for visual RTL — but keep numeric runs (dates, amounts,
+// times: digits with . / : , -) in their original order so "1.7.2026" stays readable.
 function rtl(str) {
   if (str === null || str === undefined) return ''
   str = String(str)
-  // Keep numbers and punctuation runs in their natural order while reversing Hebrew runs
-  // Simple approach: reverse the whole string (works well for plain Hebrew phrases)
-  return str.split('').reverse().join('')
+  // Split into tokens: numeric runs vs everything else
+  const tokens = str.match(/[0-9][0-9.\/:,-]*[0-9]|[0-9]|[^0-9]+/g) || []
+  // Reverse each non-numeric token's characters; leave numeric tokens intact.
+  const processed = tokens.map(t =>
+    /^[0-9]/.test(t) ? t : t.split('').reverse().join('')
+  )
+  // Reverse token order so the whole line reads right-to-left
+  return processed.reverse().join('')
+}
+
+function fmtDate(dateInput) {
+  const d = dateInput instanceof Date ? dateInput : new Date(dateInput)
+  if (isNaN(d)) return '—'
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`
 }
 
 const MONTHS = ['', 'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני', 'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר']
@@ -83,7 +94,7 @@ export function exportWorkerPdf(worker, entries, total, monthLabel) {
   doc.setFont('Hebrew', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(150, 150, 150)
-  doc.text(rtl(`הופק על ידי ERUIT · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
+  doc.text(rtl(`הופק על ידי ERUIT · ${fmtDate(new Date())}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
 
   doc.save(`${worker.name}-${monthLabel || 'all'}.pdf`)
 }
@@ -122,7 +133,7 @@ export function exportMonthlyAllWorkersPdf(workersWithTotals, monthLabel, grandT
   doc.setFont('Hebrew', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(150, 150, 150)
-  doc.text(rtl(`הופק על ידי ERUIT · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
+  doc.text(rtl(`הופק על ידי ERUIT · ${fmtDate(new Date())}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
 
   doc.save(`סיכום-חודשי-${monthLabel || 'all'}.pdf`)
 }
@@ -139,7 +150,7 @@ export function exportEventsPdf(eventsList, filterLabel) {
     const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
     const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
     const status = total === 0 ? '—' : paid === total ? 'שולם' : paid > 0 ? 'חלקי' : 'ממתין'
-    const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
+    const d = ev.date ? fmtDate(ev.date + 'T00:00:00') : '—'
     return [
       rtl(status),
       `\u20AA${total.toLocaleString('he-IL')}`,
@@ -176,7 +187,7 @@ export function exportEventsPdf(eventsList, filterLabel) {
   doc.setFont('Hebrew', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(150, 150, 150)
-  doc.text(rtl(`הופק · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
+  doc.text(rtl(`הופק · ${fmtDate(new Date())}`), pageWidth - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' })
 
   doc.save(`אירועים-${filterLabel || 'הכל'}.pdf`)
 }
@@ -250,7 +261,7 @@ export function exportDetailedSummaryPdf(sortedWorkers, monthLabel, grandTotal, 
   doc.setFont('Hebrew', 'normal')
   doc.setFontSize(9)
   doc.setTextColor(150, 150, 150)
-  doc.text(rtl(`הופק · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, pageHeight - 10, { align: 'right' })
+  doc.text(rtl(`הופק · ${fmtDate(new Date())}`), pageWidth - 14, pageHeight - 10, { align: 'right' })
 
   doc.save(`דוח-מפורט-${monthLabel || 'הכל'}.pdf`)
 }

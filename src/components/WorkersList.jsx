@@ -82,7 +82,7 @@ export default function WorkersList({ events }) {
   const salaryMap = {}
   events.forEach(ev => {
     const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
-    const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL') : '—'
+    const d = ev.date ? (() => { const dd = new Date(ev.date + 'T00:00:00'); return `${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}/${dd.getFullYear()}` })() : '—'
     ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
       if (!salaryMap[w.name]) salaryMap[w.name] = []
