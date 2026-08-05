@@ -66,7 +66,7 @@
 }
 .addBtn:hover { opacity: 0.85; }
 
-.mainWide { max-width: 1200px !important; }
+.mainWide { max-width: none !important; padding-left: 2rem; padding-right: 2rem; }
 
 .main {
   flex: 1;
