@@ -107,9 +107,22 @@
   border-bottom: 1px solid var(--border);
 }
 
+.dateHeader {
+  display: grid;
+  grid-template-columns: 100px 1fr 90px 80px 70px;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid var(--border);
+}
+
 .dateRow {
   display: grid;
-  grid-template-columns: 120px 1fr 100px;
+  grid-template-columns: 100px 1fr 90px 80px 70px;
   gap: 8px;
   font-size: 13px;
   padding: 5px 0;

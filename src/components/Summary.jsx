@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import styles from './Summary.module.css'
-import { exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
+import { exportMonthlyAllWorkersPdf, exportDetailedSummaryPdf } from '../utils/pdfExport'
 
 const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 const SORT_OPTIONS = [
@@ -79,6 +79,10 @@ export default function Summary({ events }) {
     exportMonthlyAllWorkersPdf(data, monthLabel, grandTotal)
   }
 
+  function handleExportDetailed() {
+    exportDetailedSummaryPdf(sorted, monthLabel, grandTotal, grandPaid)
+  }
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.header}>
@@ -92,7 +96,10 @@ export default function Summary({ events }) {
             {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
           <button className={styles.exportBtn} onClick={handleExportAll} disabled={sorted.length === 0}>
-            <i className="ti ti-file-type-pdf" /> ייצוא PDF
+            <i className="ti ti-file-type-pdf" /> סיכום PDF
+          </button>
+          <button className={styles.exportBtn} onClick={handleExportDetailed} disabled={sorted.length === 0}>
+            <i className="ti ti-file-description" /> דוח מפורט PDF
           </button>
         </div>
       </div>

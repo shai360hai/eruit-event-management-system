@@ -181,4 +181,78 @@ export function exportEventsPdf(eventsList, filterLabel) {
   doc.save(`אירועים-${filterLabel || 'הכל'}.pdf`)
 }
 
+
+export function exportDetailedSummaryPdf(sortedWorkers, monthLabel, grandTotal, grandPaid) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+  ensureFonts(doc)
+
+  addHeader(doc, 'דוח מפורט — שכר לפי עובד', monthLabel)
+
+  let startY = 38
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+
+  sortedWorkers.forEach(([name, v]) => {
+    // New page if near bottom
+    if (startY > pageHeight - 60) {
+      doc.addPage()
+      startY = 20
+    }
+
+    // Worker title line
+    doc.setFont('Hebrew', 'bold')
+    doc.setFontSize(13)
+    const roleStr = v.role ? ` · ${v.role}` : ''
+    doc.text(rtl(`${name}${roleStr}`), pageWidth - 14, startY, { align: 'right' })
+    doc.setFont('Hebrew', 'normal')
+    doc.setFontSize(10)
+    doc.setTextColor(110, 110, 110)
+    const paidStr = v.totalPaid > 0 ? ` · שולם: \u20AA${v.totalPaid.toLocaleString('he-IL')}` : ''
+    doc.text(rtl(`סה"כ: \u20AA${v.total.toLocaleString('he-IL')}${paidStr}`), 14, startY, { align: 'left' })
+    doc.setTextColor(0, 0, 0)
+
+    const head = [['סטטוס', 'שכר', 'מיקום', 'אירוע', 'תאריך'].map(rtl)]
+    const body = v.dates.map(d => [
+      rtl(d.paid ? 'שולם' : 'ממתין'),
+      `\u20AA${d.salary.toLocaleString('he-IL')}`,
+      rtl(d.location || '—'),
+      rtl(d.event || '—'),
+      rtl(d.date || '—')
+    ])
+
+    autoTable(doc, {
+      startY: startY + 4,
+      head,
+      body,
+      styles: { font: 'Hebrew', halign: 'right', fontSize: 9.5, cellPadding: 2 },
+      headStyles: { font: 'Hebrew', fontStyle: 'bold', fillColor: [70, 70, 68], textColor: 255, halign: 'right', fontSize: 9 },
+      columnStyles: { 0: { halign: 'center', cellWidth: 20 }, 1: { halign: 'left', cellWidth: 24 } },
+      margin: { left: 14, right: 14 },
+      theme: 'grid',
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 0) {
+          const txt = data.cell.raw
+          if (txt === rtl('שולם')) data.cell.styles.textColor = [59, 109, 17]
+          else data.cell.styles.textColor = [192, 57, 43]
+        }
+      }
+    })
+
+    startY = doc.lastAutoTable.finalY + 12
+  })
+
+  // Grand totals
+  if (startY > pageHeight - 30) { doc.addPage(); startY = 20 }
+  doc.setFont('Hebrew', 'bold')
+  doc.setFontSize(12)
+  doc.text(rtl(`סה"כ כללי: \u20AA${grandTotal.toLocaleString('he-IL')} · שולם: \u20AA${grandPaid.toLocaleString('he-IL')} · נותר: \u20AA${(grandTotal - grandPaid).toLocaleString('he-IL')}`), pageWidth - 14, startY, { align: 'right' })
+
+  doc.setFont('Hebrew', 'normal')
+  doc.setFontSize(9)
+  doc.setTextColor(150, 150, 150)
+  doc.text(rtl(`הופק · ${new Date().toLocaleDateString('he-IL')}`), pageWidth - 14, pageHeight - 10, { align: 'right' })
+
+  doc.save(`דוח-מפורט-${monthLabel || 'הכל'}.pdf`)
+}
+
 export { MONTHS }
