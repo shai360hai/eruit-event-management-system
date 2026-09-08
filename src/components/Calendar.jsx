@@ -194,6 +194,7 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
                       {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
                       <span><i className="ti ti-users" /> {(ev.workers || []).length} עובדים</span>
                     </div>
+                    {ev.notes && <div className={styles.eventRowNote}><i className="ti ti-note" /> {ev.notes}</div>}
                   </div>
                 )
               })

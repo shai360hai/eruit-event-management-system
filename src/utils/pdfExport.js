@@ -105,9 +105,10 @@ export function exportMonthlyAllWorkersPdf(workersWithTotals, monthLabel, grandT
 
   addHeader(doc, 'סיכום שכר חודשי — כל העובדים', monthLabel)
 
-  const head = [['סה"כ שכר', 'אירועים', 'תפקיד', 'שם עובד'].map(rtl)]
+  const head = [['סה"כ שכר', 'שעות', 'אירועים', 'תפקיד', 'שם עובד'].map(rtl)]
   const body = workersWithTotals.map(w => [
     `\u20AA${w.total.toLocaleString('he-IL')}`,
+    w.hours ? String(w.hours) : '—',
     String(w.count),
     rtl(w.role || '—'),
     rtl(w.name)
@@ -119,7 +120,7 @@ export function exportMonthlyAllWorkersPdf(workersWithTotals, monthLabel, grandT
     body,
     styles: { font: 'Hebrew', halign: 'right', fontSize: 11, cellPadding: 3 },
     headStyles: { font: 'Hebrew', fontStyle: 'bold', fillColor: [26, 25, 23], textColor: 255, halign: 'right' },
-    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' } },
+    columnStyles: { 0: { halign: 'left' }, 1: { halign: 'center' }, 2: { halign: 'center' } },
     margin: { left: 14, right: 14 },
     theme: 'grid'
   })
@@ -219,15 +220,16 @@ export function exportDetailedSummaryPdf(sortedWorkers, monthLabel, grandTotal, 
     doc.setFontSize(10)
     doc.setTextColor(110, 110, 110)
     const paidStr = v.totalPaid > 0 ? ` · שולם: \u20AA${v.totalPaid.toLocaleString('he-IL')}` : ''
-    doc.text(rtl(`סה"כ: \u20AA${v.total.toLocaleString('he-IL')}${paidStr}`), 14, startY, { align: 'left' })
+    const hoursStr = v.hours > 0 ? ` · ${v.hours} שעות` : ''
+    doc.text(rtl(`סה"כ: \u20AA${v.total.toLocaleString('he-IL')}${hoursStr}${paidStr}`), 14, startY, { align: 'left' })
     doc.setTextColor(0, 0, 0)
 
-    const head = [['סטטוס', 'שכר', 'מיקום', 'אירוע', 'תאריך'].map(rtl)]
+    const head = [['סטטוס', 'שכר', 'שעות', 'אירוע', 'תאריך'].map(rtl)]
     const body = v.dates.map(d => [
       rtl(d.paid ? 'שולם' : 'ממתין'),
       `\u20AA${d.salary.toLocaleString('he-IL')}`,
-      rtl(d.location || '—'),
-      rtl(d.event || '—'),
+      d.hours ? (d.start && d.end ? `${d.start}-${d.end}` : String(d.hours)) : '—',
+      rtl(d.event || '—') + (d.note ? rtl(' · ' + d.note) : ''),
       rtl(d.date || '—')
     ])
 

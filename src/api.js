@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 
 // Single source of truth: the workers JSON on each event row.
-// Each worker: { name, role, phone, salary, paid, paid_at }
+// Each worker: { name, role, phone, salary, paid, paid_at, start_time, end_time, note }
 // The old `payments` table is no longer written to or read.
 
 export async function getEvents() {
@@ -23,6 +23,7 @@ export async function createEvent(eventData) {
       name: eventData.name,
       location: eventData.location,
       event_type: eventData.event_type || '',
+      notes: eventData.notes || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])
@@ -40,6 +41,7 @@ export async function updateEvent(id, eventData) {
       name: eventData.name,
       location: eventData.location,
       event_type: eventData.event_type || '',
+      notes: eventData.notes || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
+import { calcHours, fmtHours } from '../utils/hours'
 import styles from './EventForm.module.css'
 
 export default function EventForm({ event, prefillDate, duplicateData, onSave, onDelete, onCancel, loading }) {
@@ -14,6 +15,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   const [savingLocation, setSavingLocation] = useState(false)
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
+  const [notes, setNotes] = useState('')
   const [workers, setWorkers] = useState([])
   const [allWorkers, setAllWorkers] = useState([])
   const [showPicker, setShowPicker] = useState(false)
@@ -39,6 +41,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       setEventType(event.event_type || '')
       setDate(event.date || '')
       setTime(event.time || '')
+      setNotes(event.notes || '')
       setWorkers(event.workers?.length
         ? event.workers.map(w => ({ ...w, _id: w._id || Date.now() + Math.random() }))
         : [])
@@ -48,13 +51,15 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       setEventType(duplicateData.event_type || '')
       setDate('')
       setTime(duplicateData.time || '')
+      setNotes('')
       setWorkers((duplicateData.workers || []).map(w => ({ ...w, _id: Date.now() + Math.random() })))
     } else {
-      setName(''); setLocation(''); setEventType(''); setDate(prefillDate || ''); setTime(''); setWorkers([])
+      setName(''); setLocation(''); setEventType(''); setDate(prefillDate || ''); setTime(''); setNotes(''); setWorkers([])
     }
   }, [event, prefillDate, duplicateData])
 
   const total = workers.reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+  const totalHours = workers.reduce((s, w) => s + calcHours(w.start_time, w.end_time), 0)
 
   function addFromList(w) {
     if (workers.find(ew => ew.name === w.name)) return
@@ -65,6 +70,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       phone: w.phone || '',
       // auto-fill default salary — editable per event
       salary: w.default_salary ? String(w.default_salary) : '',
+      start_time: '', end_time: '', note: '',
       paid: false
     }])
     setShowPicker(false)
@@ -103,6 +109,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       role: newWorker.role.trim(),
       phone: newWorker.phone.trim(),
       salary: newWorker.default_salary || '',
+      start_time: '', end_time: '', note: '',
       paid: false
     }])
     await refreshWorkers()
@@ -122,7 +129,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   async function handleSave() {
     if (!name.trim()) { alert('נא להזין שם אירוע'); return }
     const cleanWorkers = workers.filter(w => w.name.trim()).map(({ _id, ...w }) => w)
-    onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, workers: cleanWorkers })
+    onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, notes: notes.trim(), workers: cleanWorkers })
   }
 
   const filteredAllWorkers = allWorkers.filter(w =>
@@ -192,6 +199,17 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
           <label>שעה</label>
           <input type="time" value={time} onChange={e => setTime(e.target.value)} />
         </div>
+      </div>
+
+      <div className={styles.field} style={{ marginBottom: 12 }}>
+        <label>הערות לאירוע</label>
+        <textarea
+          value={notes}
+          onChange={e => setNotes(e.target.value)}
+          placeholder="הערות, פרטים חשובים, דגשים לאירוע..."
+          rows={3}
+          className={styles.notesArea}
+        />
       </div>
 
       <div className={styles.workersSection}>
@@ -268,35 +286,55 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
           <div className={styles.workerHeader}>
             <span>שם עובד</span>
             <span>תפקיד</span>
+            <span>משעה</span>
+            <span>עד שעה</span>
+            <span>שעות</span>
             <span>שכר ₪</span>
             <span>שולם</span>
             <span />
           </div>
         )}
 
-        {workers.map(w => (
-          <div key={w._id} className={styles.workerRow}>
-            <input value={w.name} onChange={e => updateWorker(w._id, 'name', e.target.value)} placeholder="שם מלא" />
-            <input value={w.role || ''} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
+        {workers.map(w => {
+          const hrs = calcHours(w.start_time, w.end_time)
+          return (
+            <div key={w._id} className={styles.workerGroup}>
+            <div className={styles.workerRow}>
+              <input value={w.name} onChange={e => updateWorker(w._id, 'name', e.target.value)} placeholder="שם מלא" />
+              <input value={w.role || ''} onChange={e => updateWorker(w._id, 'role', e.target.value)} placeholder="תפקיד" />
+              <input type="time" value={w.start_time || ''} onChange={e => updateWorker(w._id, 'start_time', e.target.value)} className={styles.timeInput} />
+              <input type="time" value={w.end_time || ''} onChange={e => updateWorker(w._id, 'end_time', e.target.value)} className={styles.timeInput} />
+              <span className={styles.hoursCell}>{hrs ? fmtHours(hrs) : '—'}</span>
+              <input
+                type="number"
+                value={w.salary || ''}
+                onChange={e => updateWorker(w._id, 'salary', e.target.value)}
+                placeholder="0"
+                min="0"
+              />
+              <label className={styles.paidCheck} title="שולם">
+                <input type="checkbox" checked={!!w.paid} onChange={e => updateWorker(w._id, 'paid', e.target.checked)} />
+              </label>
+              <button className={styles.removeBtn} onClick={() => removeWorker(w._id)}>
+                <i className="ti ti-x" />
+              </button>
+            </div>
             <input
-              type="number"
-              value={w.salary || ''}
-              onChange={e => updateWorker(w._id, 'salary', e.target.value)}
-              placeholder="0"
-              min="0"
+              className={styles.workerNoteInput}
+              value={w.note || ''}
+              onChange={e => updateWorker(w._id, 'note', e.target.value)}
+              placeholder="הערה לעובד (אופציונלי)"
             />
-            <label className={styles.paidCheck} title="שולם">
-              <input type="checkbox" checked={!!w.paid} onChange={e => updateWorker(w._id, 'paid', e.target.checked)} />
-            </label>
-            <button className={styles.removeBtn} onClick={() => removeWorker(w._id)}>
-              <i className="ti ti-x" />
-            </button>
-          </div>
-        ))}
+            </div>
+          )
+        })}
 
         <div className={styles.totalBox}>
           <span>סה"כ לשלם באירוע</span>
-          <span className={styles.totalAmount}>₪{total.toLocaleString('he-IL')}</span>
+          <div className={styles.totalRight}>
+            {totalHours > 0 && <span className={styles.totalHours}>{fmtHours(totalHours)} שעות</span>}
+            <span className={styles.totalAmount}>₪{total.toLocaleString('he-IL')}</span>
+          </div>
         </div>
       </div>
 

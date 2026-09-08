@@ -372,3 +372,13 @@
   .legend { white-space: nowrap; overflow-x: auto; }
   .legendHeader { margin-bottom: 6px; }
 }
+
+.eventRowNote {
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 5px 8px;
+  line-height: 1.4;
+}
