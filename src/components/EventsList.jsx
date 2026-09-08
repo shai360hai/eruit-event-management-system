@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { calcHours, fmtHours } from '../utils/hours'
 import styles from './EventsList.module.css'
 import { exportEventsPdf } from '../utils/pdfExport'
 
@@ -7,6 +8,7 @@ const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','�
 export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
   const [search, setSearch] = useState('')
   const [monthFilter, setMonthFilter] = useState('')
+  const [expandedId, setExpandedId] = useState(null)
   const visibleEvents = [...events]
     .filter(ev => {
       if (monthFilter && (!ev.date || new Date(ev.date + 'T00:00:00').getMonth() + 1 !== parseInt(monthFilter))) return false
@@ -70,31 +72,98 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
               const partPaid = paid > 0 && paid < total
               const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
               const wc = (ev.workers || []).length
-              return (
-                <div key={ev.id} className={styles.card} onClick={() => onEdit(ev)}>
-                  <div className={styles.cardTop}>
-                    <span className={styles.eventName}>
-                      {ev.name}
-                      <button
-                        className={styles.dupBtn}
-                        title="שכפל אירוע"
-                        onClick={e => { e.stopPropagation(); onDuplicate(ev) }}
-                      ><i className="ti ti-copy" /></button>
-                    </span>
-                    <div className={styles.eventTotalWrap}>
-                      <span className={styles.eventTotal}>₪{total.toLocaleString('he-IL')}</span>
-                      {allPaid && total > 0 && <span className={styles.paidBadge}>✓ שולם</span>}
-                      {partPaid && <span className={styles.partPaidBadge}>שולם ₪{paid.toLocaleString('he-IL')}</span>}
+                const isOpen = expandedId === ev.id
+                const evHours = (ev.workers || []).reduce((s, w) => s + calcHours(w.start_time, w.end_time), 0)
+                return (
+                <div key={ev.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
+                  <div
+                    className={styles.cardHead}
+                    onClick={() => setExpandedId(isOpen ? null : ev.id)}
+                  >
+                    <div className={styles.cardTop}>
+                      <span className={styles.eventName}>
+                        <i className={`ti ${isOpen ? 'ti-chevron-down' : 'ti-chevron-left'} ${styles.chevron}`} />
+                        {ev.name}
+                      </span>
+                      <div className={styles.eventTotalWrap}>
+                        <span className={styles.eventTotal}>₪{total.toLocaleString('he-IL')}</span>
+                        {allPaid && total > 0 && <span className={styles.paidBadge}>✓ שולם</span>}
+                        {partPaid && <span className={styles.partPaidBadge}>שולם ₪{paid.toLocaleString('he-IL')}</span>}
+                      </div>
+                    </div>
+                    <div className={styles.cardMeta}>
+                      {ev.event_type && <span className={styles.typeBadge}>{ev.event_type}</span>}
+                      {ev.notes && <span title={ev.notes}><i className="ti ti-note" /> הערות</span>}
+                      {ev.location && <span><i className="ti ti-map-pin" /> {ev.location}</span>}
+                      <span><i className="ti ti-calendar" /> {d}</span>
+                      {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
+                      <span><i className="ti ti-users" /> {wc} עובדים</span>
+                      {evHours > 0 && <span><i className="ti ti-hourglass" /> {fmtHours(evHours)} שעות</span>}
                     </div>
                   </div>
-                  <div className={styles.cardMeta}>
-                    {ev.event_type && <span className={styles.typeBadge}>{ev.event_type}</span>}
-                    {ev.notes && <span title={ev.notes}><i className="ti ti-note" /> הערות</span>}
-                    {ev.location && <span><i className="ti ti-map-pin" /> {ev.location}</span>}
-                    <span><i className="ti ti-calendar" /> {d}</span>
-                    {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
-                    <span><i className="ti ti-users" /> {wc} עובדים</span>
-                  </div>
+
+                  {isOpen && (
+                    <div className={styles.details}>
+                      {ev.notes && (
+                        <div className={styles.detailsNotes}>
+                          <i className="ti ti-note" /> {ev.notes}
+                        </div>
+                      )}
+
+                      {wc === 0 ? (
+                        <div className={styles.noWorkers}>לא שובצו עובדים לאירוע זה</div>
+                      ) : (
+                        <>
+                          <div className={styles.wHeader}>
+                            <span>שם עובד</span>
+                            <span>תפקיד</span>
+                            <span>שעות</span>
+                            <span>שכר</span>
+                            <span>סטטוס</span>
+                          </div>
+                          {(ev.workers || []).map((w, i) => {
+                            const hrs = calcHours(w.start_time, w.end_time)
+                            return (
+                              <div key={i} className={styles.wRow}>
+                                <span className={styles.wName}>
+                                  {w.name}
+                                  {w.note && <span className={styles.wNote}> · {w.note}</span>}
+                                </span>
+                                <span className={styles.muted}>{w.role || '—'}</span>
+                                <span className={styles.muted}>
+                                  {hrs ? (w.start_time && w.end_time ? `${w.start_time}-${w.end_time}` : fmtHours(hrs)) : '—'}
+                                </span>
+                                <span className={styles.wSalary}>₪{(parseFloat(w.salary) || 0).toLocaleString('he-IL')}</span>
+                                <span>
+                                  {w.paid
+                                    ? <span className={styles.paidTxt}>✓ שולם</span>
+                                    : <span className={styles.pendTxt}>ממתין</span>}
+                                </span>
+                              </div>
+                            )
+                          })}
+                          <div className={styles.wTotal}>
+                            <span>סה"כ</span>
+                            <span />
+                            <span>{evHours > 0 ? fmtHours(evHours) : '—'}</span>
+                            <span>₪{total.toLocaleString('he-IL')}</span>
+                            <span className={allPaid ? styles.paidTxt : styles.pendTxt}>
+                              {allPaid ? '✓ שולם' : `נותר ₪${(total - paid).toLocaleString('he-IL')}`}
+                            </span>
+                          </div>
+                        </>
+                      )}
+
+                      <div className={styles.detailsActions}>
+                        <button className={styles.detailBtn} onClick={() => onDuplicate(ev)}>
+                          <i className="ti ti-copy" /> שכפל
+                        </button>
+                        <button className={styles.detailBtnPrimary} onClick={() => onEdit(ev)}>
+                          <i className="ti ti-pencil" /> ערוך אירוע
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
