@@ -16,6 +16,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   const [date, setDate] = useState('')
   const [time, setTime] = useState('')
   const [notes, setNotes] = useState('')
+  const [payer, setPayer] = useState('')
   const [workers, setWorkers] = useState([])
   const [allWorkers, setAllWorkers] = useState([])
   const [showPicker, setShowPicker] = useState(false)
@@ -42,6 +43,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       setDate(event.date || '')
       setTime(event.time || '')
       setNotes(event.notes || '')
+      setPayer(event.payer || '')
       setWorkers(event.workers?.length
         ? event.workers.map(w => ({ ...w, _id: w._id || Date.now() + Math.random() }))
         : [])
@@ -54,7 +56,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
       setNotes('')
       setWorkers((duplicateData.workers || []).map(w => ({ ...w, _id: Date.now() + Math.random() })))
     } else {
-      setName(''); setLocation(''); setEventType(''); setDate(prefillDate || ''); setTime(''); setNotes(''); setWorkers([])
+      setName(''); setLocation(''); setEventType(''); setDate(prefillDate || ''); setTime(''); setNotes(''); setPayer(''); setWorkers([])
     }
   }, [event, prefillDate, duplicateData])
 
@@ -63,7 +65,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
     // Skip the load effect itself — only user edits count as dirty
     if (firstRender.current) { firstRender.current = false; return }
     onDirtyChange?.(true)
-  }, [name, location, eventType, date, time, notes, workers])
+  }, [name, location, eventType, date, time, notes, payer, workers])
 
   useEffect(() => {
     firstRender.current = true
@@ -172,7 +174,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
     }
 
     const cleanWorkers = named.map(({ _id, ...w }) => ({ ...w, name: w.name.trim() }))
-    onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, notes: notes.trim(), workers: cleanWorkers })
+    onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, notes: notes.trim(), payer: payer.trim(), workers: cleanWorkers })
   }
 
   const filteredAllWorkers = allWorkers.filter(w =>
@@ -230,7 +232,10 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
             </div>
           )}
         </div>
-        <div />
+        <div className={styles.field}>
+          <label>מי משלם על האירוע</label>
+          <input value={payer} onChange={e => setPayer(e.target.value)} placeholder="שם הלקוח / המשלם" />
+        </div>
       </div>
 
       <div className={styles.grid2}>

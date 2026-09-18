@@ -95,6 +95,7 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
                       {ev.event_type && <span className={styles.typeBadge}>{ev.event_type}</span>}
                       {ev.notes && <span title={ev.notes}><i className="ti ti-note" /> הערות</span>}
                       {ev.location && <span><i className="ti ti-map-pin" /> {ev.location}</span>}
+                      {ev.payer && <span><i className="ti ti-user-dollar" /> {ev.payer}</span>}
                       <span><i className="ti ti-calendar" /> {d}</span>
                       {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
                       <span><i className="ti ti-users" /> {wc} עובדים</span>
@@ -143,7 +144,7 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
                             )
                           })}
                           <div className={styles.wTotal}>
-                            <span>סה"כ</span>
+                            <span>{ev.payer ? `לחיוב: ${ev.payer}` : 'סה"כ'}</span>
                             <span />
                             <span>{evHours > 0 ? fmtHours(evHours) : '—'}</span>
                             <span>₪{total.toLocaleString('he-IL')}</span>

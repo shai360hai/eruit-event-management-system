@@ -192,3 +192,88 @@
   font-family: inherit;
 }
 .payAllBtn:hover { background: #2d5209; }
+
+/* ── Billing view ── */
+.headLeft { min-width: 0; }
+.chev { font-size: 12px; color: var(--text-hint); margin-left: 5px; }
+.eventCardHeader { cursor: pointer; }
+.eventCardHeader:hover { background: var(--bg); }
+
+.payerBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 1.25rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+.payerLbl { color: var(--text-secondary); display: flex; align-items: center; gap: 4px; font-weight: 500; }
+.payerName { font-weight: 600; color: var(--text); }
+.payerEmpty { color: var(--text-hint); font-style: italic; }
+.payerEdit {
+  background: transparent; border: none; color: var(--text-hint);
+  font-size: 13px; padding: 2px 5px; border-radius: 4px; cursor: pointer;
+}
+.payerEdit:hover { color: var(--text); background: var(--bg); }
+.payerInput {
+  flex: 1; min-width: 140px; max-width: 280px;
+  padding: 5px 9px; font-size: 13px !important;
+}
+.payerSave {
+  background: var(--accent-bg); color: var(--accent-text); border: none;
+  padding: 5px 13px; font-size: 12px; border-radius: var(--radius-sm); font-weight: 500;
+}
+.payerCancel {
+  background: transparent; border: 1px solid var(--border); color: var(--text-secondary);
+  padding: 5px 11px; font-size: 12px; border-radius: var(--radius-sm);
+}
+
+.rowHead {
+  display: grid;
+  grid-template-columns: 1fr 120px 110px 95px 105px;
+  gap: 8px;
+  padding: 8px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-hint);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border);
+}
+.paymentRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 110px 95px 105px;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.rowTotal {
+  display: grid;
+  grid-template-columns: 1fr 120px 110px 95px 105px;
+  gap: 8px;
+  padding: 10px 0 2px;
+  font-size: 13px;
+  font-weight: 600;
+  border-top: 2px solid var(--border-strong);
+  margin-top: 4px;
+}
+.rowNote { font-size: 12px; color: var(--text-hint); font-weight: 400; }
+.owedTxt { color: var(--danger); font-size: 12px; font-weight: 600; }
+.paidTxt { color: var(--success); font-size: 12px; font-weight: 600; }
+
+.toggleBtnUnpaid {
+  background: transparent;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.toggleBtnUnpaid:hover { background: var(--success); border-color: var(--success); color: #fff; }
+
+@media (max-width: 700px) {
+  .rowHead, .paymentRow, .rowTotal { grid-template-columns: 1fr 90px 90px 95px; }
+  .rowHead span:nth-child(2), .paymentRow span:nth-child(2), .rowTotal span:nth-child(2) { display: none; }
+  .payerBar { padding: 8px 1rem; }
+}

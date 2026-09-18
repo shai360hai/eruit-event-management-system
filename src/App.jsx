@@ -135,7 +135,7 @@ function Shell() {
     { id: 'list',     icon: 'ti-list',            label: 'אירועים' },
     { id: 'workers',  icon: 'ti-users',            label: 'עובדים' },
     { id: 'summary',  icon: 'ti-chart-bar',        label: 'סיכום' },
-    { id: 'payments', icon: 'ti-wallet',            label: 'תשלומים' },
+    { id: 'payments', icon: 'ti-wallet',            label: 'חיובים' },
   ]
 
   return (
@@ -211,7 +211,7 @@ function Shell() {
         ) : view === 'workers' ? (
           <WorkersList events={events} />
         ) : view === 'payments' ? (
-          <Payments events={events} onEventsChange={updated => {
+          <Payments events={events} isAdmin={isAdmin} onEventsChange={updated => {
             setEvents(es => es.map(e => e.id === updated.id ? updated : e))
           }} />
         ) : (

@@ -24,6 +24,7 @@ export async function createEvent(eventData) {
       location: eventData.location,
       event_type: eventData.event_type || '',
       notes: eventData.notes || '',
+      payer: eventData.payer || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])
@@ -42,6 +43,7 @@ export async function updateEvent(id, eventData) {
       location: eventData.location,
       event_type: eventData.event_type || '',
       notes: eventData.notes || '',
+      payer: eventData.payer || '',
       date: eventData.date || null,
       time: eventData.time || null,
       workers: JSON.stringify(eventData.workers || [])
