@@ -22,22 +22,41 @@ function Shell() {
   const [editEvent, setEditEvent] = useState(null)
   const [prefillDate, setPrefillDate] = useState('')
   const [duplicateData, setDuplicateData] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [fetching, setFetching] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [formDirty, setFormDirty] = useState(false)
 
   useEffect(() => {
     try { if (view !== 'form') sessionStorage.setItem('eruit-view', view) } catch {}
   }, [view])
-  const [loading, setLoading] = useState(false)
-  const [fetching, setFetching] = useState(true)
+
+  useEffect(() => {
+    if (!formDirty) return
+    const warn = e => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [formDirty])
 
 
   useEffect(() => {
     if (!user) return
-    getEvents()
-      .then(setEvents)
-      .catch(() => setEvents([]))
-      .finally(() => setFetching(false))
+    loadEvents()
 
   }, [user])
+
+  async function loadEvents() {
+    setFetching(true)
+    setLoadError('')
+    try {
+      const data = await getEvents()
+      setEvents(data)
+    } catch (err) {
+      setLoadError(err.message || 'שגיאה בטעינת הנתונים')
+    } finally {
+      setFetching(false)
+    }
+  }
 
   // Unpaid total derived live from events (single source of truth)
   const unpaidTotal = events.reduce((s, e) =>
@@ -65,6 +84,7 @@ function Shell() {
       setEditEvent(null)
       setPrefillDate('')
       setDuplicateData(null)
+      setFormDirty(false)
     } catch (err) {
       alert('שגיאה בשמירה: ' + err.message)
     } finally {
@@ -87,7 +107,12 @@ function Shell() {
     }
   }
 
-  function openAdd() { setEditEvent(null); setView('form') }
+  function guardLeave() {
+    if (!formDirty) return true
+    return confirm('יש שינויים שלא נשמרו. לצאת בלי לשמור?')
+  }
+
+  function openAdd() { setEditEvent(null); setFormDirty(false); setView('form') }
   function openAddWithDate(date) { setEditEvent(null); setPrefillDate(date); setView('form') }
   function openEdit(ev) { setEditEvent(ev); setView('form') }
   function duplicateEvent(ev) {
@@ -102,7 +127,7 @@ function Shell() {
     })
     setView('form')
   }
-  function cancel() { setEditEvent(null); setPrefillDate(''); setDuplicateData(null); setView('dashboard') }
+  function cancel() { setEditEvent(null); setPrefillDate(''); setDuplicateData(null); setFormDirty(false); setView('dashboard') }
 
   const NAV = [
     { id: 'dashboard', icon: 'ti-home', label: 'בית' },
@@ -124,7 +149,7 @@ function Shell() {
           {NAV.map(n => (
             <button key={n.id}
               className={`${styles.navLink} ${view === n.id ? styles.active : ''}`}
-              onClick={() => { setView(n.id); setEditEvent(null) }}
+              onClick={() => { if (view === 'form' && !guardLeave()) return; setView(n.id); setEditEvent(null); setFormDirty(false) }}
             >
               <i className={`ti ${n.icon}`} /> {n.label}
               {n.id === 'payments' && unpaidTotal > 0 && (
@@ -142,6 +167,14 @@ function Shell() {
               <img src={user.user_metadata.avatar_url} className={styles.avatar} alt="" />
             )}
             {isAdmin && <span className={styles.adminBadge}>Admin</span>}
+            <button
+              className={styles.darkBtn}
+              onClick={loadEvents}
+              disabled={fetching}
+              title="רענן נתונים"
+            >
+              <i className={`ti ti-refresh ${fetching ? styles.spin : ''}`} />
+            </button>
             <button className={styles.darkBtn} onClick={() => setDark(d => !d)} title={dark ? 'מצב יום' : 'מצב לילה'}>
               <i className={`ti ${dark ? 'ti-sun' : 'ti-moon'}`} />
             </button>
@@ -158,10 +191,19 @@ function Shell() {
             <i className="ti ti-loader-2" style={{ fontSize: 28, display: 'block', marginBottom: 8 }} />
             טוען נתונים...
           </div>
+        ) : loadError ? (
+          <div className={styles.errorBox}>
+            <i className="ti ti-alert-triangle" style={{ fontSize: 30, marginBottom: 10 }} />
+            <p className={styles.errorTitle}>לא הצלחנו לטעון את הנתונים</p>
+            <p className={styles.errorMsg}>{loadError}</p>
+            <button className={styles.retryBtn} onClick={loadEvents}>
+              <i className="ti ti-refresh" /> נסה שוב
+            </button>
+          </div>
         ) : view === 'dashboard' ? (
           <Dashboard events={events} onNavigate={v => { setView(v); setEditEvent(null) }} />
         ) : view === 'form' ? (
-          <EventForm event={editEvent} prefillDate={prefillDate} duplicateData={duplicateData} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
+          <EventForm event={editEvent} prefillDate={prefillDate} duplicateData={duplicateData} onDirtyChange={setFormDirty} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (
           <Calendar events={events} onEventClick={openEdit} onAddEvent={openAddWithDate} />
         ) : view === 'list' ? (

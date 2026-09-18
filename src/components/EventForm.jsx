@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import { calcHours, fmtHours } from '../utils/hours'
 import styles from './EventForm.module.css'
 
-export default function EventForm({ event, prefillDate, duplicateData, onSave, onDelete, onCancel, loading }) {
+export default function EventForm({ event, prefillDate, duplicateData, onSave, onDelete, onCancel, onDirtyChange, loading }) {
   const { isAdmin } = useAuth()
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
@@ -58,11 +58,26 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
     }
   }, [event, prefillDate, duplicateData])
 
+  const firstRender = useRef(true)
+  useEffect(() => {
+    // Skip the load effect itself — only user edits count as dirty
+    if (firstRender.current) { firstRender.current = false; return }
+    onDirtyChange?.(true)
+  }, [name, location, eventType, date, time, notes, workers])
+
+  useEffect(() => {
+    firstRender.current = true
+    onDirtyChange?.(false)
+  }, [event, prefillDate, duplicateData])
+
   const total = workers.reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
   const totalHours = workers.reduce((s, w) => s + calcHours(w.start_time, w.end_time), 0)
 
   function addFromList(w) {
-    if (workers.find(ew => ew.name === w.name)) return
+    if (workers.find(ew => (ew.name || '').trim() === w.name.trim())) {
+      alert(`${w.name} כבר שובץ לאירוע זה`)
+      return
+    }
     setWorkers(ws => [...ws, {
       _id: Date.now() + Math.random(),
       name: w.name,
@@ -128,7 +143,35 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
 
   async function handleSave() {
     if (!name.trim()) { alert('נא להזין שם אירוע'); return }
-    const cleanWorkers = workers.filter(w => w.name.trim()).map(({ _id, ...w }) => w)
+
+    const named = workers.filter(w => w.name.trim())
+
+    // Duplicate names in one event break per-worker grouping in the summary
+    const seen = new Set()
+    const dupes = []
+    named.forEach(w => {
+      const key = w.name.trim()
+      if (seen.has(key)) dupes.push(key)
+      seen.add(key)
+    })
+    if (dupes.length) {
+      alert(`העובד "${dupes[0]}" מופיע פעמיים באירוע. מחק את הכפילות או שנה את השם.`)
+      return
+    }
+
+    // Catch typos before they corrupt payroll totals
+    const badSalary = named.find(w => w.salary !== '' && w.salary != null && (isNaN(parseFloat(w.salary)) || parseFloat(w.salary) < 0))
+    if (badSalary) {
+      alert(`שכר לא תקין עבור "${badSalary.name}". הזן מספר חיובי.`)
+      return
+    }
+
+    const noSalary = named.filter(w => !w.salary || parseFloat(w.salary) === 0)
+    if (noSalary.length && !confirm(`${noSalary.length} עובדים ללא שכר (${noSalary.map(w => w.name).join(', ')}). לשמור בכל זאת?`)) {
+      return
+    }
+
+    const cleanWorkers = named.map(({ _id, ...w }) => ({ ...w, name: w.name.trim() }))
     onSave({ name: name.trim(), location: location.trim(), event_type: eventType.trim(), date, time, notes: notes.trim(), workers: cleanWorkers })
   }
 

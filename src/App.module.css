@@ -159,3 +159,32 @@
   font-size: 16px;
 }
 .darkBtn:hover { border-color: var(--border-strong); color: var(--text); }
+
+.errorBox {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  max-width: 460px;
+  margin: 2rem auto;
+}
+.errorTitle { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.errorMsg { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; word-break: break-word; }
+.retryBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.retryBtn:hover { opacity: 0.85; }
+
+.spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
