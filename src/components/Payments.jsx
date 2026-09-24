@@ -21,7 +21,7 @@ function usePersistedMonth(key) {
 
 export default function Payments({ events, onEventsChange, isAdmin }) {
   const [month, setMonth] = usePersistedMonth('eruit-month-payments')
-  const [groupBy, setGroupBy] = useState('event')   // event | worker
+  const [groupBy, setGroupBy] = useState('event')   // event | worker | payer
   const [filterPaid, setFilterPaid] = useState('all')
   const [search, setSearch] = useState('')
   const [busy, setBusy] = useState(null)
@@ -109,12 +109,12 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
   // ── Group ──
   const groups = {}
   filtered.forEach(r => {
-    const id = groupBy === 'event' ? r.event.id : r.workerName
+    const id = groupBy === 'event' ? r.event.id : groupBy === 'payer' ? (r.event.payer?.trim() || '__no_payer__') : r.workerName
     if (!groups[id]) {
       groups[id] = {
         id,
-        title: groupBy === 'event' ? (r.event.name || '—') : r.workerName,
-        event: groupBy === 'event' ? r.event : null,
+        title: groupBy === 'event' ? (r.event.name || '—') : groupBy === 'payer' ? (r.event.payer?.trim() || 'לא הוגדר משלם') : r.workerName,
+        event: groupBy === 'event' ? r.event : null, isPayer: groupBy === 'payer',
         rows: []
       }
     }
@@ -129,6 +129,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
   }).sort((a, b) => {
     if (a.allPaid !== b.allPaid) return a.allPaid ? 1 : -1
     if (groupBy === 'event') return new Date(b.event?.date || 0) - new Date(a.event?.date || 0)
+    if (groupBy === 'payer') return b.owed - a.owed || b.total - a.total
     return b.owed - a.owed || b.total - a.total
   })
 
@@ -144,7 +145,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
             {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
           </select>
           <div className={styles.filterBtns}>
-            {[['event','לפי אירוע'],['worker','לפי עובד']].map(([v,l]) => (
+            {[['event','לפי אירוע'],['worker','לפי עובד'],['payer','לפי משלם']].map(([v,l]) => (
               <button key={v} className={`${styles.filterBtn} ${groupBy === v ? styles.filterBtnActive : ''}`}
                 onClick={() => { setGroupBy(v); setOpenKey(null) }}>{l}</button>
             ))}
@@ -204,6 +205,12 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
                       <span><i className="ti ti-users" /> {g.rows.length}</span>
                       {g.hours > 0 && <span><i className="ti ti-hourglass" /> {fmtHours(g.hours)}</span>}
                     </>
+                  ) : groupBy === 'payer' ? (
+                    <>
+                      <span><i className="ti ti-calendar" /> {[...new Set(g.rows.map(r => r.event.name))].join(', ')}</span>
+                      <span><i className="ti ti-users" /> {g.rows.length} עובדים</span>
+                      {g.hours > 0 && <span><i className="ti ti-hourglass" /> {fmtHours(g.hours)} שעות</span>}
+                    </>
                   ) : (
                     <>
                       <span><i className="ti ti-calendar" /> {g.rows.length} אירועים</span>
@@ -217,7 +224,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
                 {g.owed > 0 && <span className={styles.owedBadge}>חייב ₪{g.owed.toLocaleString('he-IL')}</span>}
                 {g.allPaid && <span className={styles.paidBadge}><i className="ti ti-check" /> שולם הכל</span>}
                 <span className={styles.totalLabel}>סה"כ ₪{g.total.toLocaleString('he-IL')}</span>
-                {!g.allPaid && groupBy === 'event' && (
+                {!g.allPaid && (groupBy === 'event') && (
                   <button className={styles.payAllBtn} disabled={isBusyAll}
                     onClick={e => { e.stopPropagation(); handlePayAll(ev, g.rows) }}>
                     {isBusyAll ? '...' : <><i className="ti ti-checks" /> שלם הכל</>}
@@ -227,7 +234,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
             </div>
 
             {/* Payer line — who should pay for this event */}
-            {groupBy === 'event' && (
+            {(groupBy === 'event') && (
               <div className={styles.payerBar}>
                 <span className={styles.payerLbl}><i className="ti ti-user-dollar" /> משלם:</span>
                 {editPayer === ev.id ? (
@@ -267,13 +274,15 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
                 {g.rows.map(r => (
                   <div key={r.key} className={`${styles.paymentRow} ${r.paid ? styles.paymentRowPaid : ''}`}>
                     <span className={styles.workerName}>
-                      {groupBy === 'event' ? r.workerName : (r.event.name || '—')}
+                      {groupBy === 'payer' ? r.workerName : groupBy === 'event' ? r.workerName : (r.event.name || '—')}
                       {r.note && <span className={styles.rowNote}> · {r.note}</span>}
                     </span>
                     <span className={styles.muted}>
                       {groupBy === 'event'
                         ? (r.role || '—')
-                        : (r.event.date ? new Date(r.event.date + 'T00:00:00').toLocaleDateString('he-IL') : '—')}
+                        : groupBy === 'payer'
+                          ? (r.event.name || '—')
+                          : (r.event.date ? new Date(r.event.date + 'T00:00:00').toLocaleDateString('he-IL') : '—')}
                     </span>
                     <span className={styles.muted}>
                       {r.hours ? (r.start && r.end ? `${r.start}-${r.end}` : fmtHours(r.hours)) : '—'}
