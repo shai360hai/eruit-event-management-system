@@ -209,7 +209,7 @@ function Shell() {
         ) : view === 'list' ? (
           <EventsList events={events} onEdit={openEdit} onAdd={openAdd} onDuplicate={duplicateEvent} />
         ) : view === 'workers' ? (
-          <WorkersList events={events} />
+          <WorkersList events={events} onEventsChange={updated => { setEvents(es => es.map(e => e.id === updated.id ? updated : e)) }} />
         ) : view === 'payments' ? (
           <Payments events={events} isAdmin={isAdmin} onEventsChange={updated => {
             setEvents(es => es.map(e => e.id === updated.id ? updated : e))

@@ -112,7 +112,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   async function handleAddNewWorker() {
     if (!newWorker.name.trim()) { alert('נא להזין שם עובד'); return }
     setSavingWorker(true)
-    await supabase.from('workers')
+    const { error: insertErr } = await supabase.from('workers')
       .insert([{
         name: newWorker.name.trim(),
         role: newWorker.role.trim(),
@@ -120,6 +120,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
         default_salary: parseFloat(newWorker.default_salary) || 0
       }])
       .select().single()
+    if (insertErr) { alert('שגיאה בשמירת עובד: ' + insertErr.message); setSavingWorker(false); return }
     setWorkers(ws => [...ws, {
       _id: Date.now() + Math.random(),
       name: newWorker.name.trim(),

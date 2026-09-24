@@ -13,12 +13,13 @@ export default function Dashboard({ events, onNavigate }) {
     return new Date(e.date + 'T00:00:00').getMonth() + 1 === thisMonth
   })
 
-  // Upcoming (next 7 days)
+  // Upcoming (next 7 days) — compare date strings to avoid timezone drift
+  const todayStr = now.toISOString().slice(0, 10)
+  const in7 = new Date(now); in7.setDate(in7.getDate() + 7)
+  const in7Str = in7.toISOString().slice(0, 10)
   const upcoming = events.filter(e => {
     if (!e.date) return false
-    const d = new Date(e.date + 'T00:00:00')
-    const diff = (d - now) / 86400000
-    return diff >= 0 && diff <= 7
+    return e.date >= todayStr && e.date <= in7Str
   }).sort((a, b) => new Date(a.date) - new Date(b.date))
 
   // ── Financials — all from events (single source of truth) ──
@@ -115,7 +116,7 @@ export default function Dashboard({ events, onNavigate }) {
             </div>
           ) : upcoming.map(ev => {
             const d = new Date(ev.date + 'T00:00:00')
-            const dayDiff = Math.round((d - now) / 86400000)
+            const dayDiff = Math.round((new Date(ev.date + 'T00:00:00') - new Date(todayStr)) / 86400000)
             const label = dayDiff === 0 ? 'היום' : dayDiff === 1 ? 'מחר' : `בעוד ${dayDiff} ימים`
             const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
             const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)

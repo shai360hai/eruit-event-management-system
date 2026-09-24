@@ -21,7 +21,7 @@ function usePersistedMonth(key) {
   return [month, setMonth]
 }
 
-export default function WorkersList({ events }) {
+export default function WorkersList({ events, onEventsChange }) {
   const { isAdmin } = useAuth()
   const [workers, setWorkers] = useState([])
   const [loading, setLoading] = useState(true)

@@ -224,7 +224,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
                 {g.owed > 0 && <span className={styles.owedBadge}>חייב ₪{g.owed.toLocaleString('he-IL')}</span>}
                 {g.allPaid && <span className={styles.paidBadge}><i className="ti ti-check" /> שולם הכל</span>}
                 <span className={styles.totalLabel}>סה"כ ₪{g.total.toLocaleString('he-IL')}</span>
-                {!g.allPaid && (groupBy === 'event') && (
+                {!g.allPaid && groupBy === 'event' && (
                   <button className={styles.payAllBtn} disabled={isBusyAll}
                     onClick={e => { e.stopPropagation(); handlePayAll(ev, g.rows) }}>
                     {isBusyAll ? '...' : <><i className="ti ti-checks" /> שלם הכל</>}
@@ -234,7 +234,7 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
             </div>
 
             {/* Payer line — who should pay for this event */}
-            {(groupBy === 'event') && (
+            {groupBy === 'event' && (
               <div className={styles.payerBar}>
                 <span className={styles.payerLbl}><i className="ti ti-user-dollar" /> משלם:</span>
                 {editPayer === ev.id ? (

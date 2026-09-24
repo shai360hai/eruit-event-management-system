@@ -43,15 +43,6 @@ export default function Summary({ events }) {
   const totalHoursAll = filtered.reduce((s, e) =>
     s + (e.workers || []).reduce((ss, w) => ss + calcHours(w.start_time, w.end_time), 0), 0)
 
-  function calcHours(start, end) {
-    if (!start || !end) return 0
-    const [sh, sm] = start.split(':').map(Number)
-    const [eh, em] = end.split(':').map(Number)
-    let mins = (eh * 60 + em) - (sh * 60 + sm)
-    if (mins < 0) mins += 24 * 60
-    return Math.round(mins / 6) / 10
-  }
-
   // ── Build worker map ──
   const workerMap = {}
   filtered.forEach(ev => {
@@ -85,14 +76,14 @@ export default function Summary({ events }) {
   else if (sortBy === 'name') sorted.sort((a, b) => a[0].localeCompare(b[0], 'he'))
   else if (sortBy === 'location') sorted.sort((a, b) => (a[1].location||'').localeCompare(b[1].location||'','he'))
   else if (sortBy === 'count') sorted.sort((a, b) => b[1].count - a[1].count)
-  else if (sortBy === 'hours') sorted.sort((a, b) => b[1].hours - a[1].hours)
+  else if (sortBy === 'hours') sorted.sort((a, b) => b[1].totalHours - a[1].totalHours)
 
   const grandTotal = sorted.reduce((s, [, v]) => s + v.total, 0)
   const grandPaid  = sorted.reduce((s, [, v]) => s + v.totalPaid, 0)
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
 
   function handleExportAll() {
-    const data = sorted.map(([name, v]) => ({ name, role: v.role, count: v.count, total: v.total, hours: v.hours ? Math.round(v.hours * 100) / 100 : 0 }))
+    const data = sorted.map(([name, v]) => ({ name, role: v.role, count: v.count, total: v.total, hours: v.totalHours ? Math.round(v.totalHours * 100) / 100 : 0 }))
     exportMonthlyAllWorkersPdf(data, monthLabel, grandTotal)
   }
 
@@ -170,7 +161,7 @@ export default function Summary({ events }) {
                   <span className={styles.workerName}>{name}</span>
                   <span className={styles.muted}>{v.role || '—'}</span>
                   <span>{v.count}</span>
-                  <span className={styles.muted}>{v.totalHours > 0 ? v.totalHours : '—'}</span>
+                  <span className={styles.muted}>{v.totalHours > 0 ? fmtHours(v.totalHours) : '—'}</span>
                   <span>
                     <span className={pct === 100 ? styles.paidFull : pct > 0 ? styles.paidPartial : styles.paidNone}>
                       {pct === 100 ? '✓ שולם' : pct > 0 ? `${pct}%` : '—'}
@@ -184,8 +175,7 @@ export default function Summary({ events }) {
               <span>סה"כ</span>
               <span />
               <span>{sorted.reduce((s, [, v]) => s + v.count, 0)}</span>
-              <span className={styles.hoursVal}>{fmtHours(sorted.reduce((s, [, v]) => s + v.hours, 0))}</span>
-              <span>{Math.round(sorted.reduce((s, [, v]) => s + v.totalHours, 0) * 10) / 10 || '—'}</span>
+              <span>{fmtHours(sorted.reduce((s, [, v]) => s + v.totalHours, 0))}</span>
               <span className={grandPaid > 0 ? styles.paidFull : ''}>
                 {grandPaid > 0 ? `₪${grandPaid.toLocaleString('he-IL')}` : '—'}
               </span>
@@ -201,7 +191,6 @@ export default function Summary({ events }) {
                 <div className={styles.workerBlockName}>
                   <span>{name}</span>
                   {v.role && <span className={styles.workerBlockRole}>{v.role}</span>}
-                  {v.hours > 0 && <span className={styles.workerBlockHours}>{fmtHours(v.hours)} שעות</span>}
                   <span className={styles.workerBlockTotal}>₪{v.total.toLocaleString('he-IL')}</span>
                   {v.totalHours > 0 && <span className={styles.hoursTag}>{v.totalHours} שעות</span>}
                   {v.totalPaid === v.total && v.total > 0 && <span className={styles.paidFull}>✓ שולם הכל</span>}
@@ -236,7 +225,6 @@ export default function Summary({ events }) {
                 ))}
                 <div className={styles.workerSubTotal}>
                   <span>סה"כ: ₪{v.total.toLocaleString('he-IL')}</span>
-                  {v.hours > 0 && <span>{fmtHours(v.hours)} שעות</span>}
                   {v.totalHours > 0 && <span>שעות: {v.totalHours}</span>}
                   {v.totalPaid > 0 && <span className={styles.paidFull}>שולם: ₪{v.totalPaid.toLocaleString('he-IL')}</span>}
                   {v.totalPaid < v.total && <span className={styles.paidNone}>נותר: ₪{(v.total - v.totalPaid).toLocaleString('he-IL')}</span>}
