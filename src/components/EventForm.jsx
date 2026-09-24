@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import { calcHours, fmtHours } from '../utils/hours'
+import { getPayers } from '../api'
 import styles from './EventForm.module.css'
 
 export default function EventForm({ event, prefillDate, duplicateData, onSave, onDelete, onCancel, onDirtyChange, loading }) {
@@ -9,6 +10,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   const [name, setName] = useState('')
   const [location, setLocation] = useState('')
   const [eventType, setEventType] = useState('')
+  const [payers, setPayers] = useState([])
   const [locations, setLocations] = useState([])
   const [showAddLocation, setShowAddLocation] = useState(false)
   const [newLocation, setNewLocation] = useState('')
@@ -33,6 +35,7 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
   useEffect(() => {
     refreshWorkers()
     supabase.from('locations').select('*').order('name').then(({ data }) => setLocations(data || []))
+    getPayers().then(setPayers).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -235,7 +238,12 @@ export default function EventForm({ event, prefillDate, duplicateData, onSave, o
         </div>
         <div className={styles.field}>
           <label>מי משלם על האירוע</label>
-          <input value={payer} onChange={e => setPayer(e.target.value)} placeholder="שם הלקוח / המשלם" />
+          <select value={payer} onChange={e => setPayer(e.target.value)}>
+            <option value="">— בחר משלם —</option>
+            {payers.map(p => (
+              <option key={p.id} value={p.name}>{p.name}</option>
+            ))}
+          </select>
         </div>
       </div>
 

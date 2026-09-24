@@ -1,0 +1,296 @@
+.wrapper { padding: 0; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.pageTitle { font-size: 22px; font-weight: 700; }
+.headerActions { display: flex; gap: 8px; align-items: center; }
+.headerActions select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.grandBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--danger-bg);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ── Payer card ── */
+.payerCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.payerCardDone { border-color: var(--success); }
+
+.payerCardHead {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payerNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.payerIcon { color: var(--chip-text); font-size: 18px; }
+.payerName { font-size: 17px; font-weight: 700; flex: 1; }
+
+.deletePayerBtn {
+  background: none;
+  border: none;
+  color: var(--text-hint);
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+}
+.deletePayerBtn:hover { color: var(--danger); background: var(--danger-bg); }
+
+.payerTotals {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.totalChip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  min-width: 90px;
+}
+.totalChipBilled  { background: var(--surface-2); }
+.totalChipReceived { background: var(--success-bg); }
+.totalChipOwed    { background: var(--danger-bg); }
+.totalChipDone    { background: var(--success-bg); }
+
+.chipLbl { font-size: 11px; color: var(--text-secondary); font-weight: 500; margin-bottom: 2px; }
+.chipVal { font-size: 15px; font-weight: 700; }
+.totalChipOwed .chipVal   { color: var(--danger); }
+.totalChipDone .chipVal   { color: var(--success); }
+.totalChipReceived .chipVal { color: var(--success); }
+
+.addPayBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: auto;
+  white-space: nowrap;
+}
+.addPayBtn:hover { opacity: 0.85; }
+
+/* ── Add payment form ── */
+.addPayForm {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 18px;
+}
+.addPayTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.addPayFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.field input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+.addPayActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ── Section (events / payments) ── */
+.section { padding: 0 18px 16px; }
+.sectionTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 12px 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-top: 1px solid var(--border);
+}
+
+/* Events table */
+.evTable { font-size: 13px; }
+.evTableHead {
+  display: grid;
+  grid-template-columns: 2fr 1fr 60px 90px 100px 90px;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.evRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 60px 90px 100px 90px;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+}
+.evRow:hover { background: var(--surface-2); }
+.evRowDone { border-color: var(--border); }
+.evName { font-weight: 500; }
+
+/* Payments received table */
+.prTable { font-size: 13px; }
+.prTableHead {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 36px;
+  gap: 8px;
+  padding: 6px 8px;
+  background: var(--success-bg);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.prRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr 36px;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 2px;
+}
+.prRow:hover { background: var(--surface-2); }
+
+.delPayBtn {
+  background: none;
+  border: none;
+  color: var(--text-hint);
+  padding: 3px 5px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+.delPayBtn:hover { color: var(--danger); background: var(--danger-bg); }
+
+/* ── Add payer card (admin) ── */
+.addPayerCard {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin-top: 8px;
+}
+.addPayerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+}
+.addPayerRow {
+  display: flex;
+  gap: 8px;
+}
+.addPayerRow input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* ── Buttons ── */
+.saveBtn {
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.saveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
+.cancelBtn {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+/* ── Misc ── */
+.muted   { color: var(--text-secondary); }
+.paidTxt { color: var(--success); font-weight: 600; }
+.owedTxt { color: var(--danger);  font-weight: 600; }
+.empty   { text-align: center; padding: 40px; color: var(--text-secondary); }
+.noData  { padding: 12px 18px; color: var(--text-hint); font-size: 13px; }
+
+@media (max-width: 600px) {
+  .evTableHead, .evRow { grid-template-columns: 2fr 1fr 70px 80px; }
+  .evTableHead span:nth-child(3),
+  .evRow span:nth-child(3),
+  .evTableHead span:nth-child(5),
+  .evRow span:nth-child(5) { display: none; }
+
+  .payerTotals { gap: 6px; }
+  .totalChip { min-width: 70px; padding: 5px 8px; }
+  .addPayFields { grid-template-columns: 1fr; }
+}

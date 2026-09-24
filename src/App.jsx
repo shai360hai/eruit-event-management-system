@@ -7,6 +7,7 @@ import Calendar from './components/Calendar'
 import WorkersList from './components/WorkersList'
 import Login from './components/Login'
 import Payments from './components/Payments'
+import Settlements from './components/Settlements'
 import Dashboard from './components/Dashboard'
 import { getEvents, createEvent, updateEvent, deleteEvent } from './api'
 import styles from './App.module.css'
@@ -135,7 +136,8 @@ function Shell() {
     { id: 'list',     icon: 'ti-list',            label: 'אירועים' },
     { id: 'workers',  icon: 'ti-users',            label: 'עובדים' },
     { id: 'summary',  icon: 'ti-chart-bar',        label: 'סיכום' },
-    { id: 'payments', icon: 'ti-wallet',            label: 'חיובים' },
+    { id: 'payments',     icon: 'ti-wallet',            label: 'חיובים' },
+    { id: 'settlements',  icon: 'ti-receipt',           label: 'התחשבנות' },
   ]
 
   return (
@@ -214,6 +216,8 @@ function Shell() {
           <Payments events={events} isAdmin={isAdmin} onEventsChange={updated => {
             setEvents(es => es.map(e => e.id === updated.id ? updated : e))
           }} />
+        ) : view === 'settlements' ? (
+          <Settlements events={events} isAdmin={isAdmin} />
         ) : (
           <Summary events={events} />
         )}

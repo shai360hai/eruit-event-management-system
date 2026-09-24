@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { toggleWorkerPaid, updateEvent } from '../api'
+import { useState, useEffect } from 'react'
+import { toggleWorkerPaid, updateEvent, getPayers } from '../api'
 import { calcHours, fmtHours } from '../utils/hours'
 import { MONTHS } from '../utils/constants'
 import { usePersistedMonth } from '../hooks/usePersistedMonth'
@@ -14,6 +14,9 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
   const [openKey, setOpenKey] = useState(null)
   const [editPayer, setEditPayer] = useState(null)
   const [payerVal, setPayerVal] = useState('')
+  const [payers, setPayers] = useState([])
+
+  useEffect(() => { getPayers().then(setPayers).catch(() => {}) }, [])
 
   // ── Every charge row derives from events (single source of truth) ──
   const rows = []
@@ -225,10 +228,15 @@ export default function Payments({ events, onEventsChange, isAdmin }) {
                 <span className={styles.payerLbl}><i className="ti ti-user-dollar" /> משלם:</span>
                 {editPayer === ev.id ? (
                   <>
-                    <input className={styles.payerInput} value={payerVal} autoFocus
+                    <select
+                      className={styles.payerInput}
+                      value={payerVal}
+                      autoFocus
                       onChange={e => setPayerVal(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') savePayer(ev); if (e.key === 'Escape') setEditPayer(null) }}
-                      placeholder="שם המשלם / לקוח" />
+                    >
+                      <option value="">— בחר משלם —</option>
+                      {payers.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                    </select>
                     <button className={styles.payerSave} onClick={() => savePayer(ev)} disabled={busy === 'payer:' + ev.id}>
                       {busy === 'payer:' + ev.id ? '...' : 'שמור'}
                     </button>

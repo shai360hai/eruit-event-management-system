@@ -70,3 +70,48 @@ export async function deleteEvent(id) {
   if (error) throw new Error(error.message)
   return { ok: true }
 }
+
+// ── Payers ──────────────────────────────────────────────────────────────────
+
+export async function getPayers() {
+  const { data, error } = await supabase.from('payers').select('*').order('name')
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+export async function addPayer(name) {
+  const { data, error } = await supabase.from('payers').insert([{ name: name.trim() }]).select().single()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function deletePayer(id) {
+  const { error } = await supabase.from('payers').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+// ── Payments received from payers ────────────────────────────────────────────
+
+export async function getPaymentsReceived() {
+  const { data, error } = await supabase
+    .from('payments_received')
+    .select('*')
+    .order('received_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  return data || []
+}
+
+export async function addPaymentReceived({ payer_name, amount, note, received_at }) {
+  const { data, error } = await supabase
+    .from('payments_received')
+    .insert([{ payer_name, amount: parseFloat(amount), note: note || '', received_at }])
+    .select()
+    .single()
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function deletePaymentReceived(id) {
+  const { error } = await supabase.from('payments_received').delete().eq('id', id)
+  if (error) throw new Error(error.message)
+}
