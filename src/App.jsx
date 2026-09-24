@@ -207,7 +207,34 @@ function Shell() {
         ) : view === 'form' ? (
           <EventForm event={editEvent} prefillDate={prefillDate} duplicateData={duplicateData} onDirtyChange={setFormDirty} onSave={handleSave} onDelete={handleDelete} onCancel={cancel} loading={loading} />
         ) : view === 'calendar' ? (
-          <Calendar events={events} onEventClick={openEdit} onAddEvent={openAddWithDate} />
+          <Calendar
+            events={events}
+            onEventClick={openEdit}
+            onAddEvent={openAddWithDate}
+            savingEvent={loading}
+            onSave={async (data, existingEvent) => {
+              setLoading(true)
+              try {
+                if (existingEvent) {
+                  const updated = await updateEvent(existingEvent.id, data)
+                  setEvents(es => es.map(e => e.id === existingEvent.id ? updated : e))
+                } else {
+                  const created = await createEvent(data)
+                  setEvents(es => [...es, created])
+                }
+              } catch (err) { alert('שגיאה בשמירה: ' + err.message) }
+              setLoading(false)
+            }}
+            onDelete={async (existingEvent) => {
+              if (!existingEvent) return
+              setLoading(true)
+              try {
+                await deleteEvent(existingEvent.id)
+                setEvents(es => es.filter(e => e.id !== existingEvent.id))
+              } catch (err) { alert('שגיאה במחיקה: ' + err.message) }
+              setLoading(false)
+            }}
+          />
         ) : view === 'list' ? (
           <EventsList events={events} onEdit={openEdit} onAdd={openAdd} onDuplicate={duplicateEvent} />
         ) : view === 'workers' ? (

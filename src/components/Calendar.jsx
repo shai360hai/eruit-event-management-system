@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
 import { MONTHS, DAYS_SHORT } from '../utils/constants'
+import EventForm from './EventForm'
 import styles from './Calendar.module.css'
 
 const DAYS = DAYS_SHORT
@@ -18,7 +19,7 @@ function loadCalPos() {
   return { year: t.getFullYear(), month: t.getMonth() }
 }
 
-export default function Calendar({ events, onEventClick, onAddEvent }) {
+export default function Calendar({ events, onEventClick, onAddEvent, onSave, onDelete, savingEvent }) {
   const { isAdmin } = useAuth()
   const today = new Date()
   const init = loadCalPos()
@@ -30,6 +31,36 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
   const [newLocName, setNewLocName] = useState('')
   const [newLocColor, setNewLocColor] = useState(COLOR_PALETTE[0])
   const [busy, setBusy] = useState(false)
+
+  // ── Modal state ──
+  const [modal, setModal] = useState(null)  // null | { mode: 'edit'|'add', event?: obj, prefillDate?: str }
+  const [formDirty, setFormDirty] = useState(false)
+
+  function openEdit(ev) {
+    setModal({ mode: 'edit', event: ev })
+    setFormDirty(false)
+  }
+  function openAdd(dateStr) {
+    setModal({ mode: 'add', prefillDate: dateStr })
+    setFormDirty(false)
+  }
+  function closeModal() {
+    if (formDirty && !confirm('יש שינויים שלא נשמרו. לסגור?')) return
+    setModal(null)
+    setFormDirty(false)
+  }
+
+  async function handleModalSave(data) {
+    await onSave(data, modal?.event || null)
+    setModal(null)
+    setFormDirty(false)
+  }
+
+  async function handleModalDelete() {
+    if (!modal?.event || !isAdmin || !confirm('למחוק את האירוע?')) return
+    await onDelete(modal.event)
+    setModal(null)
+  }
 
   useEffect(() => { fetchLocations() }, [])
 
@@ -171,7 +202,7 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
             {selectedEvents.length === 0 ? (
               <div className={styles.dayEmpty}>
                 <p className={styles.dayEmptyText}>אין אירועים ביום זה</p>
-                <button className={styles.addEventBtn} onClick={() => onAddEvent(selectedStr)}>
+                <button className={styles.addEventBtn} onClick={() => openAdd(selectedStr)}>
                   <i className="ti ti-plus" /> הוסף אירוע
                 </button>
               </div>
@@ -179,7 +210,7 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
               selectedEvents.map(ev => {
                 const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
                 return (
-                  <div key={ev.id} className={styles.eventRow} onClick={() => onEventClick(ev)}
+                  <div key={ev.id} className={styles.eventRow} onClick={() => openEdit(ev)}
                     style={{ borderRightColor: colorFor(ev.location), borderRightWidth: 3 }}>
                     <div className={styles.eventRowTop}>
                       <span className={styles.eventRowName}>{ev.name}</span>
@@ -199,7 +230,7 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
                 )
               })
             )}
-            <button className={styles.addEventBtnSmall} onClick={() => onAddEvent(selectedStr)}>
+            <button className={styles.addEventBtnSmall} onClick={() => openAdd(selectedStr)}>
               <i className="ti ti-plus" /> הוסף אירוע לתאריך זה
             </button>
           </div>
@@ -267,6 +298,27 @@ export default function Calendar({ events, onEventClick, onAddEvent }) {
           </div>
         )}
       </div>
+
+      {/* ── Event edit/add modal ── */}
+      {modal && (
+        <div className={styles.modalOverlay} onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
+          <div className={styles.modalBox}>
+            <button className={styles.modalClose} onClick={closeModal} title="סגור">
+              <i className="ti ti-x" />
+            </button>
+            <EventForm
+              event={modal.mode === 'edit' ? modal.event : null}
+              prefillDate={modal.mode === 'add' ? modal.prefillDate : ''}
+              duplicateData={null}
+              onDirtyChange={setFormDirty}
+              onSave={handleModalSave}
+              onDelete={handleModalDelete}
+              onCancel={closeModal}
+              loading={!!savingEvent}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
