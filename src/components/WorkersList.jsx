@@ -1,25 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../supabase'
+import { MONTHS } from '../utils/constants'
+import { fmtDateShort } from '../utils/format'
+import { usePersistedMonth } from '../hooks/usePersistedMonth'
 import styles from './WorkersList.module.css'
 import { exportWorkerPdf, exportMonthlyAllWorkersPdf } from '../utils/pdfExport'
 import { updateEvent } from '../api'
-
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
-
-function usePersistedMonth(key) {
-  const [month, setMonth] = useState(() => {
-    try {
-      const s = sessionStorage.getItem(key)
-      if (s !== null) return s
-    } catch {}
-    return String(new Date().getMonth() + 1)
-  })
-  useEffect(() => {
-    try { sessionStorage.setItem(key, month) } catch {}
-  }, [month, key])
-  return [month, setMonth]
-}
 
 export default function WorkersList({ events, onEventsChange }) {
   const { isAdmin } = useAuth()
@@ -82,7 +69,7 @@ export default function WorkersList({ events, onEventsChange }) {
   const salaryMap = {}
   events.forEach(ev => {
     const evMonth = ev.date ? new Date(ev.date + 'T00:00:00').getMonth() + 1 : null
-    const d = ev.date ? (() => { const dd = new Date(ev.date + 'T00:00:00'); return `${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}/${dd.getFullYear()}` })() : '—'
+    const d = fmtDateShort(ev.date) || '—'
     ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
       if (!salaryMap[w.name]) salaryMap[w.name] = []
@@ -119,11 +106,14 @@ export default function WorkersList({ events, onEventsChange }) {
   async function togglePaid(entry) {
     const ev = events.find(e => e.id === entry.eventId)
     if (!ev) return
+    const newPaid = !entry.paid
     const updatedWorkers = (ev.workers || []).map((w, idx) =>
-      idx === entry.workerIdx ? { ...w, paid: !w.paid } : w
+      idx === entry.workerIdx
+        ? { ...w, paid: newPaid, paid_at: newPaid ? new Date().toISOString() : null }
+        : w
     )
-    await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
-    ev.workers = updatedWorkers
+    const updated = await updateEvent(ev.id, { ...ev, workers: updatedWorkers })
+    onEventsChange?.(updated)
   }
 
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'

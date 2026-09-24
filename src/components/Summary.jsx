@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { calcHours, fmtHours } from '../utils/hours'
+import { MONTHS } from '../utils/constants'
+import { fmtDateShort } from '../utils/format'
+import { usePersistedMonth } from '../hooks/usePersistedMonth'
 import styles from './Summary.module.css'
 import { exportMonthlyAllWorkersPdf, exportDetailedSummaryPdf } from '../utils/pdfExport'
 
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 const SORT_OPTIONS = [
   { value: 'salary',   label: 'לפי שכר' },
   { value: 'role',     label: 'לפי תפקיד' },
@@ -12,20 +14,6 @@ const SORT_OPTIONS = [
   { value: 'count',    label: 'לפי מספר אירועים' },
   { value: 'hours',    label: 'לפי שעות' },
 ]
-
-function usePersistedMonth(key) {
-  const [month, setMonth] = useState(() => {
-    try {
-      const s = sessionStorage.getItem(key)
-      if (s !== null) return s
-    } catch {}
-    return String(new Date().getMonth() + 1)
-  })
-  useEffect(() => {
-    try { sessionStorage.setItem(key, month) } catch {}
-  }, [month, key])
-  return [month, setMonth]
-}
 
 export default function Summary({ events }) {
   const [month, setMonth] = usePersistedMonth('eruit-month-summary')
@@ -46,44 +34,57 @@ export default function Summary({ events }) {
   // ── Build worker map ──
   const workerMap = {}
   filtered.forEach(ev => {
-    const d = ev.date ? (() => { const dd = new Date(ev.date + 'T00:00:00'); return `${String(dd.getDate()).padStart(2,'0')}/${String(dd.getMonth()+1).padStart(2,'0')}/${dd.getFullYear()}` })() : ''
+    const dateLabel = fmtDateShort(ev.date)
     ;(ev.workers || []).forEach((w, idx) => {
       if (!w.name) return
       const sal = parseFloat(w.salary) || 0
-      if (!workerMap[w.name]) workerMap[w.name] = {
-        role: w.role || '', total: 0, totalPaid: 0, count: 0, totalHours: 0,
-        location: ev.location || '', dates: []
-      }
       const hrs = calcHours(w.start_time, w.end_time)
-      workerMap[w.name].totalHours += hrs
-      workerMap[w.name].total += sal
-      if (w.paid) workerMap[w.name].totalPaid += sal
-      workerMap[w.name].count++
-      if (w.role && !workerMap[w.name].role) workerMap[w.name].role = w.role
-      if (ev.location && !workerMap[w.name].location) workerMap[w.name].location = ev.location
-      workerMap[w.name].dates.push({
-        date: d, event: ev.name || '', location: ev.location || '',
-        salary: sal, paid: !!w.paid, eventId: ev.id, workerIdx: idx,
-        hours: hrs, startTime: w.start_time || '', endTime: w.end_time || ''
+      if (!workerMap[w.name]) {
+        workerMap[w.name] = {
+          role: w.role || '', total: 0, totalPaid: 0, count: 0, totalHours: 0,
+          location: ev.location || '', dates: []
+        }
+      }
+      const entry = workerMap[w.name]
+      entry.totalHours += hrs
+      entry.total += sal
+      if (w.paid) entry.totalPaid += sal
+      entry.count++
+      if (w.role && !entry.role) entry.role = w.role
+      if (ev.location && !entry.location) entry.location = ev.location
+      entry.dates.push({
+        date: dateLabel,
+        event: ev.name || '',
+        location: ev.location || '',
+        salary: sal,
+        paid: !!w.paid,
+        eventId: ev.id,
+        workerIdx: idx,
+        hours: hrs,
+        startTime: w.start_time || '',
+        endTime: w.end_time || '',
       })
     })
   })
 
   // ── Sort ──
   let sorted = Object.entries(workerMap)
-  if (sortBy === 'salary')   sorted.sort((a, b) => b[1].total - a[1].total)
-  else if (sortBy === 'role') sorted.sort((a, b) => (a[1].role||'').localeCompare(b[1].role||'','he') || a[0].localeCompare(b[0],'he'))
-  else if (sortBy === 'name') sorted.sort((a, b) => a[0].localeCompare(b[0], 'he'))
-  else if (sortBy === 'location') sorted.sort((a, b) => (a[1].location||'').localeCompare(b[1].location||'','he'))
-  else if (sortBy === 'count') sorted.sort((a, b) => b[1].count - a[1].count)
-  else if (sortBy === 'hours') sorted.sort((a, b) => b[1].totalHours - a[1].totalHours)
+  if      (sortBy === 'salary')   sorted.sort((a, b) => b[1].total - a[1].total)
+  else if (sortBy === 'role')     sorted.sort((a, b) => (a[1].role || '').localeCompare(b[1].role || '', 'he') || a[0].localeCompare(b[0], 'he'))
+  else if (sortBy === 'name')     sorted.sort((a, b) => a[0].localeCompare(b[0], 'he'))
+  else if (sortBy === 'location') sorted.sort((a, b) => (a[1].location || '').localeCompare(b[1].location || '', 'he'))
+  else if (sortBy === 'count')    sorted.sort((a, b) => b[1].count - a[1].count)
+  else if (sortBy === 'hours')    sorted.sort((a, b) => b[1].totalHours - a[1].totalHours)
 
   const grandTotal = sorted.reduce((s, [, v]) => s + v.total, 0)
   const grandPaid  = sorted.reduce((s, [, v]) => s + v.totalPaid, 0)
   const monthLabel = month ? MONTHS[parseInt(month)] : 'כל החודשים'
 
   function handleExportAll() {
-    const data = sorted.map(([name, v]) => ({ name, role: v.role, count: v.count, total: v.total, hours: v.totalHours ? Math.round(v.totalHours * 100) / 100 : 0 }))
+    const data = sorted.map(([name, v]) => ({
+      name, role: v.role, count: v.count, total: v.total,
+      hours: v.totalHours ? Math.round(v.totalHours * 100) / 100 : 0,
+    }))
     exportMonthlyAllWorkersPdf(data, monthLabel, grandTotal)
   }
 
@@ -98,7 +99,7 @@ export default function Summary({ events }) {
         <div className={styles.headerActions}>
           <select value={month} onChange={e => setMonth(e.target.value)} className={styles.monthSelect}>
             <option value="">כל החודשים</option>
-            {MONTHS.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+            {MONTHS.slice(1).map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
           </select>
           <select value={sortBy} onChange={e => setSortBy(e.target.value)} className={styles.sortSelect}>
             {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
@@ -183,8 +184,8 @@ export default function Summary({ events }) {
             </div>
           </div>
 
-          {/* Per-event breakdown with paid status */}
-          <div className={styles.card} style={{marginTop:16}}>
+          {/* Per-worker breakdown */}
+          <div className={styles.card} style={{ marginTop: 16 }}>
             <h2 className={styles.cardTitle}>פירוט לפי עובד — כולל סטטוס תשלום</h2>
             {sorted.map(([name, v]) => (
               <div key={name} className={styles.workerBlock}>
@@ -192,7 +193,7 @@ export default function Summary({ events }) {
                   <span>{name}</span>
                   {v.role && <span className={styles.workerBlockRole}>{v.role}</span>}
                   <span className={styles.workerBlockTotal}>₪{v.total.toLocaleString('he-IL')}</span>
-                  {v.totalHours > 0 && <span className={styles.hoursTag}>{v.totalHours} שעות</span>}
+                  {v.totalHours > 0 && <span className={styles.hoursTag}>{fmtHours(v.totalHours)} שעות</span>}
                   {v.totalPaid === v.total && v.total > 0 && <span className={styles.paidFull}>✓ שולם הכל</span>}
                   {v.totalPaid > 0 && v.totalPaid < v.total && (
                     <span className={styles.paidPartial}>שולם ₪{v.totalPaid.toLocaleString('he-IL')}</span>
@@ -212,7 +213,7 @@ export default function Summary({ events }) {
                     <span>{d.event}</span>
                     <span className={styles.muted}>{d.location || '—'}</span>
                     <span className={styles.muted} title={d.startTime && d.endTime ? `${d.startTime}–${d.endTime}` : ''}>
-                      {d.hours > 0 ? d.hours : '—'}
+                      {d.hours > 0 ? fmtHours(d.hours) : '—'}
                     </span>
                     <span className={styles.salary}>₪{d.salary.toLocaleString('he-IL')}</span>
                     <span>
@@ -225,7 +226,7 @@ export default function Summary({ events }) {
                 ))}
                 <div className={styles.workerSubTotal}>
                   <span>סה"כ: ₪{v.total.toLocaleString('he-IL')}</span>
-                  {v.totalHours > 0 && <span>שעות: {v.totalHours}</span>}
+                  {v.totalHours > 0 && <span>שעות: {fmtHours(v.totalHours)}</span>}
                   {v.totalPaid > 0 && <span className={styles.paidFull}>שולם: ₪{v.totalPaid.toLocaleString('he-IL')}</span>}
                   {v.totalPaid < v.total && <span className={styles.paidNone}>נותר: ₪{(v.total - v.totalPaid).toLocaleString('he-IL')}</span>}
                 </div>

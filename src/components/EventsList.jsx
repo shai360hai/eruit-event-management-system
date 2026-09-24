@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { calcHours, fmtHours } from '../utils/hours'
+import { MONTHS } from '../utils/constants'
+import { fmtDate } from '../utils/format'
 import styles from './EventsList.module.css'
 import { exportEventsPdf } from '../utils/pdfExport'
-
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
 export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
   const [search, setSearch] = useState('')
@@ -70,11 +70,11 @@ export default function EventsList({ events, onEdit, onAdd, onDuplicate }) {
               const paid = (ev.workers || []).filter(w => w.paid).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
               const allPaid = total > 0 && paid === total
               const partPaid = paid > 0 && paid < total
-              const d = ev.date ? new Date(ev.date + 'T00:00:00').toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'
+              const d = fmtDate(ev.date)
               const wc = (ev.workers || []).length
-                const isOpen = expandedId === ev.id
-                const evHours = (ev.workers || []).reduce((s, w) => s + calcHours(w.start_time, w.end_time), 0)
-                return (
+              const isOpen = expandedId === ev.id
+              const evHours = (ev.workers || []).reduce((s, w) => s + calcHours(w.start_time, w.end_time), 0)
+              return (
                 <div key={ev.id} className={`${styles.card} ${isOpen ? styles.cardOpen : ''}`}>
                   <div
                     className={styles.cardHead}

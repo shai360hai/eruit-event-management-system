@@ -1,6 +1,5 @@
+import { MONTHS } from '../utils/constants'
 import styles from './Dashboard.module.css'
-
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
 
 export default function Dashboard({ events, onNavigate }) {
   const now = new Date()

@@ -1,23 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { toggleWorkerPaid, updateEvent } from '../api'
 import { calcHours, fmtHours } from '../utils/hours'
+import { MONTHS } from '../utils/constants'
+import { usePersistedMonth } from '../hooks/usePersistedMonth'
 import styles from './Payments.module.css'
-
-const MONTHS = ['','ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
-
-function usePersistedMonth(key) {
-  const [month, setMonth] = useState(() => {
-    try {
-      const s = sessionStorage.getItem(key)
-      if (s !== null) return s
-    } catch {}
-    return String(new Date().getMonth() + 1)
-  })
-  useEffect(() => {
-    try { sessionStorage.setItem(key, month) } catch {}
-  }, [month, key])
-  return [month, setMonth]
-}
 
 export default function Payments({ events, onEventsChange, isAdmin }) {
   const [month, setMonth] = usePersistedMonth('eruit-month-payments')

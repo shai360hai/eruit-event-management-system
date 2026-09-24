@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabase'
 import { useAuth } from '../context/AuthContext'
+import { MONTHS, DAYS_SHORT } from '../utils/constants'
 import styles from './Calendar.module.css'
 
-const DAYS = ['א\'', 'ב\'', 'ג\'', 'ד\'', 'ה\'', 'ו\'', 'ש\'']
-const MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר']
+const DAYS = DAYS_SHORT
 const DEFAULT_COLOR = '#4f6ef7'
 const COLOR_PALETTE = ['#4f6ef7', '#3b9d5b', '#e0862a', '#d64550', '#8e5bd1', '#1fa8a8', '#c94f9c', '#7a7a2a']
 
