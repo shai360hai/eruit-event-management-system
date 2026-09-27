@@ -269,7 +269,7 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
           <div className={styles.dayPanel}>
             {/* ── Date navigation bar ── */}
             <div className={styles.dayPanelNav}>
-              <button className={styles.dateNavBtn} onClick={goPrevDate} disabled={!hasPrevDate} title="תאריך קודם עם אירוע">
+              <button className={styles.dateNavBtn} onClick={goNextDate} disabled={!hasNextDate} title="תאריך הבא עם אירוע">
                 <i className="ti ti-chevron-right" />
               </button>
               <div className={styles.dayPanelTitle}>
@@ -279,7 +279,7 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
                   <span className={styles.dayCount}>{selectedEvents.length} אירועים</span>
                 )}
               </div>
-              <button className={styles.dateNavBtn} onClick={goNextDate} disabled={!hasNextDate} title="תאריך הבא עם אירוע">
+              <button className={styles.dateNavBtn} onClick={goPrevDate} disabled={!hasPrevDate} title="תאריך קודם עם אירוע">
                 <i className="ti ti-chevron-left" />
               </button>
             </div>
@@ -296,13 +296,13 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
                 {/* ── Same-day event navigation (only when >1 event) ── */}
                 {selectedEvents.length > 1 && (
                   <div className={styles.eventNavBar}>
-                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.max(0, i - 1))} disabled={safeIdx === 0}>
+                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.min(selectedEvents.length - 1, i + 1))} disabled={safeIdx === selectedEvents.length - 1}>
                       <i className="ti ti-chevron-right" />
                     </button>
                     <span className={styles.eventNavLabel}>
                       אירוע {safeIdx + 1} מתוך {selectedEvents.length}
                     </span>
-                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.min(selectedEvents.length - 1, i + 1))} disabled={safeIdx === selectedEvents.length - 1}>
+                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.max(0, i - 1))} disabled={safeIdx === 0}>
                       <i className="ti ti-chevron-left" />
                     </button>
                   </div>
@@ -417,9 +417,9 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
               <div className={styles.modalNavBar}>
                 <button
                   className={styles.modalNavBtn}
-                  onClick={modalGoPrev}
-                  disabled={!modalHasPrev}
-                  title="אירוע קודם"
+                  onClick={modalGoNext}
+                  disabled={!modalHasNext}
+                  title="אירוע הבא"
                 >
                   <i className="ti ti-chevron-right" />
                 </button>
@@ -428,9 +428,9 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
                 </span>
                 <button
                   className={styles.modalNavBtn}
-                  onClick={modalGoNext}
-                  disabled={!modalHasNext}
-                  title="אירוע הבא"
+                  onClick={modalGoPrev}
+                  disabled={!modalHasPrev}
+                  title="אירוע קודם"
                 >
                   <i className="ti ti-chevron-left" />
                 </button>
