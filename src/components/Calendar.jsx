@@ -408,34 +408,36 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
       {modal && (
         <div className={styles.modalOverlay} onClick={e => { if (e.target === e.currentTarget) closeModal() }}>
           <div className={styles.modalBox}>
-            <button className={styles.modalClose} onClick={closeModal} title="סגור">
-              <i className="ti ti-x" />
-            </button>
+            {/* ── Modal header: X + nav ── */}
+            <div className={styles.modalHeader}>
+              <button className={styles.modalClose} onClick={closeModal} title="סגור">
+                <i className="ti ti-x" />
+              </button>
 
-            {/* ── Modal event navigation bar (edit mode only) ── */}
-            {modal.mode === 'edit' && modalEventIdx !== -1 && (
-              <div className={styles.modalNavBar}>
-                <button
-                  className={styles.modalNavBtn}
-                  onClick={modalGoNext}
-                  disabled={!modalHasNext}
-                  title="אירוע הבא"
-                >
-                  <i className="ti ti-chevron-right" />
-                </button>
-                <span className={styles.modalNavLabel}>
-                  אירוע {modalEventIdx + 1} מתוך {allEventsSorted.length}
-                </span>
-                <button
-                  className={styles.modalNavBtn}
-                  onClick={modalGoPrev}
-                  disabled={!modalHasPrev}
-                  title="אירוע קודם"
-                >
-                  <i className="ti ti-chevron-left" />
-                </button>
-              </div>
-            )}
+              {modal.mode === 'edit' && modalEventIdx !== -1 ? (
+                <div className={styles.modalNavBar}>
+                  <button
+                    className={styles.modalNavBtn}
+                    onClick={modalGoNext}
+                    disabled={!modalHasNext}
+                    title="אירוע הבא"
+                  >
+                    <i className="ti ti-chevron-right" />
+                  </button>
+                  <span className={styles.modalNavLabel}>
+                    אירוע {modalEventIdx + 1} מתוך {allEventsSorted.length}
+                  </span>
+                  <button
+                    className={styles.modalNavBtn}
+                    onClick={modalGoPrev}
+                    disabled={!modalHasPrev}
+                    title="אירוע קודם"
+                  >
+                    <i className="ti ti-chevron-left" />
+                  </button>
+                </div>
+              ) : <div />}
+            </div>
 
             <EventForm
               event={modal.mode === 'edit' ? modal.event : null}
