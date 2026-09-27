@@ -36,6 +36,9 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
   const [modal, setModal] = useState(null)  // null | { mode: 'edit'|'add', event?: obj, prefillDate?: str }
   const [formDirty, setFormDirty] = useState(false)
 
+  // ── Day-panel event index (for same-day browsing) ──
+  const [dayEventIdx, setDayEventIdx] = useState(0)
+
   function openEdit(ev) {
     setModal({ mode: 'edit', event: ev })
     setFormDirty(false)
@@ -141,6 +144,35 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
     : null
   const selectedEvents = selectedStr ? (eventsByDate[selectedStr] || []) : []
 
+  // ── Sorted list of all dates that have events (for prev/next date nav) ──
+  const eventDates = Object.keys(eventsByDate).sort()
+
+  function selectDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00')
+    const m = d.getMonth()       // 0-indexed
+    const y = d.getFullYear()
+    const day = d.getDate()
+    setYear(y)
+    setMonth(m)
+    setSelected(day)
+    setDayEventIdx(0)
+  }
+
+  function goPrevDate() {
+    const idx = eventDates.indexOf(selectedStr)
+    if (idx > 0) selectDate(eventDates[idx - 1])
+  }
+  function goNextDate() {
+    const idx = eventDates.indexOf(selectedStr)
+    if (idx !== -1 && idx < eventDates.length - 1) selectDate(eventDates[idx + 1])
+  }
+
+  const hasPrevDate = selectedStr && eventDates.indexOf(selectedStr) > 0
+  const hasNextDate = selectedStr && eventDates.indexOf(selectedStr) < eventDates.length - 1
+
+  // clamp idx when events list changes
+  const safeIdx = Math.min(dayEventIdx, Math.max(0, selectedEvents.length - 1))
+
   return (
     <div className={styles.layout}>
       <div className={styles.wrapper}>
@@ -168,7 +200,7 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
               <div
                 key={day}
                 className={`${styles.cell} ${isToday ? styles.today : ''} ${isSelected ? styles.selectedCell : ''}`}
-                onClick={() => setSelected(day === selected ? null : day)}
+                onClick={() => { setSelected(day === selected ? null : day); setDayEventIdx(0) }}
               >
                 <span className={styles.dayNum}>{day}</span>
                 {evs.length > 0 && (
@@ -195,10 +227,23 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
 
         {selectedStr && (
           <div className={styles.dayPanel}>
-            <div className={styles.dayPanelTitle}>
-              <i className="ti ti-calendar-event" />
-              {` ${selected} ${MONTHS[month + 1]}`}
+            {/* ── Date navigation bar ── */}
+            <div className={styles.dayPanelNav}>
+              <button className={styles.dateNavBtn} onClick={goPrevDate} disabled={!hasPrevDate} title="תאריך קודם עם אירוע">
+                <i className="ti ti-chevron-right" />
+              </button>
+              <div className={styles.dayPanelTitle}>
+                <i className="ti ti-calendar-event" />
+                {` ${selected} ${MONTHS[month + 1]}`}
+                {selectedEvents.length > 0 && (
+                  <span className={styles.dayCount}>{selectedEvents.length} אירועים</span>
+                )}
+              </div>
+              <button className={styles.dateNavBtn} onClick={goNextDate} disabled={!hasNextDate} title="תאריך הבא עם אירוע">
+                <i className="ti ti-chevron-left" />
+              </button>
             </div>
+
             {selectedEvents.length === 0 ? (
               <div className={styles.dayEmpty}>
                 <p className={styles.dayEmptyText}>אין אירועים ביום זה</p>
@@ -207,29 +252,49 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
                 </button>
               </div>
             ) : (
-              selectedEvents.map(ev => {
-                const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
-                return (
-                  <div key={ev.id} className={styles.eventRow} onClick={() => openEdit(ev)}
-                    style={{ borderRightColor: colorFor(ev.location), borderRightWidth: 3 }}>
-                    <div className={styles.eventRowTop}>
-                      <span className={styles.eventRowName}>{ev.name}</span>
-                      <span className={styles.eventRowTotal}>₪{total.toLocaleString('he-IL')}</span>
-                    </div>
-                    <div className={styles.eventRowMeta}>
-                      {ev.location && (
-                        <span style={{ color: colorFor(ev.location), fontWeight: 600 }}>
-                          <i className="ti ti-map-pin" /> {ev.location}
-                        </span>
-                      )}
-                      {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
-                      <span><i className="ti ti-users" /> {(ev.workers || []).length} עובדים</span>
-                    </div>
-                    {ev.notes && <div className={styles.eventRowNote}><i className="ti ti-note" /> {ev.notes}</div>}
+              <>
+                {/* ── Same-day event navigation (only when >1 event) ── */}
+                {selectedEvents.length > 1 && (
+                  <div className={styles.eventNavBar}>
+                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.max(0, i - 1))} disabled={safeIdx === 0}>
+                      <i className="ti ti-chevron-right" />
+                    </button>
+                    <span className={styles.eventNavLabel}>
+                      אירוע {safeIdx + 1} מתוך {selectedEvents.length}
+                    </span>
+                    <button className={styles.eventNavBtn} onClick={() => setDayEventIdx(i => Math.min(selectedEvents.length - 1, i + 1))} disabled={safeIdx === selectedEvents.length - 1}>
+                      <i className="ti ti-chevron-left" />
+                    </button>
                   </div>
-                )
-              })
+                )}
+
+                {/* ── Current event card ── */}
+                {(() => {
+                  const ev = selectedEvents[safeIdx]
+                  const total = (ev.workers || []).reduce((s, w) => s + (parseFloat(w.salary) || 0), 0)
+                  return (
+                    <div className={styles.eventRow} onClick={() => openEdit(ev)}
+                      style={{ borderRightColor: colorFor(ev.location), borderRightWidth: 3 }}>
+                      <div className={styles.eventRowTop}>
+                        <span className={styles.eventRowName}>{ev.name}</span>
+                        <span className={styles.eventRowTotal}>₪{total.toLocaleString('he-IL')}</span>
+                      </div>
+                      <div className={styles.eventRowMeta}>
+                        {ev.location && (
+                          <span style={{ color: colorFor(ev.location), fontWeight: 600 }}>
+                            <i className="ti ti-map-pin" /> {ev.location}
+                          </span>
+                        )}
+                        {ev.time && <span><i className="ti ti-clock" /> {ev.time}</span>}
+                        <span><i className="ti ti-users" /> {(ev.workers || []).length} עובדים</span>
+                      </div>
+                      {ev.notes && <div className={styles.eventRowNote}><i className="ti ti-note" /> {ev.notes}</div>}
+                    </div>
+                  )
+                })()}
+              </>
             )}
+
             <button className={styles.addEventBtnSmall} onClick={() => openAdd(selectedStr)}>
               <i className="ti ti-plus" /> הוסף אירוע לתאריך זה
             </button>
