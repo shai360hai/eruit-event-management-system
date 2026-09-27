@@ -65,6 +65,13 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
     setModal(null)
   }
 
+  // ── Modal event navigation (prev/next across ALL events sorted by date) ──
+  function modalNavGuard(cb) {
+    if (formDirty && !confirm('יש שינויים שלא נשמרו. לעבור לאירוע הבא?')) return
+    setFormDirty(false)
+    cb()
+  }
+
   useEffect(() => { fetchLocations() }, [])
 
   useEffect(() => {
@@ -172,6 +179,39 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
 
   // clamp idx when events list changes
   const safeIdx = Math.min(dayEventIdx, Math.max(0, selectedEvents.length - 1))
+
+  // ── All events sorted by date+time for modal navigation ──
+  const allEventsSorted = [...events].sort((a, b) => {
+    const da = (a.date || '') + (a.time || '')
+    const db = (b.date || '') + (b.time || '')
+    return da < db ? -1 : da > db ? 1 : 0
+  })
+  const modalEventIdx = modal?.mode === 'edit' && modal?.event
+    ? allEventsSorted.findIndex(e => e.id === modal.event.id)
+    : -1
+  const modalHasPrev = modalEventIdx > 0
+  const modalHasNext = modalEventIdx !== -1 && modalEventIdx < allEventsSorted.length - 1
+  function modalGoPrev() {
+    modalNavGuard(() => {
+      const ev = allEventsSorted[modalEventIdx - 1]
+      setModal({ mode: 'edit', event: ev })
+      // sync calendar view to that event's date
+      if (ev?.date) {
+        const d = new Date(ev.date + 'T00:00:00')
+        setYear(d.getFullYear()); setMonth(d.getMonth()); setSelected(d.getDate())
+      }
+    })
+  }
+  function modalGoNext() {
+    modalNavGuard(() => {
+      const ev = allEventsSorted[modalEventIdx + 1]
+      setModal({ mode: 'edit', event: ev })
+      if (ev?.date) {
+        const d = new Date(ev.date + 'T00:00:00')
+        setYear(d.getFullYear()); setMonth(d.getMonth()); setSelected(d.getDate())
+      }
+    })
+  }
 
   return (
     <div className={styles.layout}>
@@ -371,6 +411,32 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
             <button className={styles.modalClose} onClick={closeModal} title="סגור">
               <i className="ti ti-x" />
             </button>
+
+            {/* ── Modal event navigation bar (edit mode only) ── */}
+            {modal.mode === 'edit' && modalEventIdx !== -1 && (
+              <div className={styles.modalNavBar}>
+                <button
+                  className={styles.modalNavBtn}
+                  onClick={modalGoPrev}
+                  disabled={!modalHasPrev}
+                  title="אירוע קודם"
+                >
+                  <i className="ti ti-chevron-right" />
+                </button>
+                <span className={styles.modalNavLabel}>
+                  אירוע {modalEventIdx + 1} מתוך {allEventsSorted.length}
+                </span>
+                <button
+                  className={styles.modalNavBtn}
+                  onClick={modalGoNext}
+                  disabled={!modalHasNext}
+                  title="אירוע הבא"
+                >
+                  <i className="ti ti-chevron-left" />
+                </button>
+              </div>
+            )}
+
             <EventForm
               event={modal.mode === 'edit' ? modal.event : null}
               prefillDate={modal.mode === 'add' ? modal.prefillDate : ''}
