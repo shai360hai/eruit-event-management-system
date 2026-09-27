@@ -147,7 +147,7 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
         <div className={styles.header}>
           <button className={styles.navBtn} onClick={nextMonth}><i className="ti ti-chevron-right" /></button>
           <div className={styles.monthTitleWrap}>
-            <span className={styles.monthTitle}>{MONTHS[month]} {year}</span>
+            <span className={styles.monthTitle}>{MONTHS[month + 1]} {year}</span>
             <button className={styles.todayBtn} onClick={goToday}>היום</button>
           </div>
           <button className={styles.navBtn} onClick={prevMonth}><i className="ti ti-chevron-left" /></button>
@@ -197,7 +197,7 @@ export default function Calendar({ events, onEventClick, onAddEvent, onSave, onD
           <div className={styles.dayPanel}>
             <div className={styles.dayPanelTitle}>
               <i className="ti ti-calendar-event" />
-              {` ${selected} ${MONTHS[month]}`}
+              {` ${selected} ${MONTHS[month + 1]}`}
             </div>
             {selectedEvents.length === 0 ? (
               <div className={styles.dayEmpty}>
