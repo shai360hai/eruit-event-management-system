@@ -7,31 +7,32 @@
   margin-bottom: 1.25rem;
 }
 
-.pageTitle { font-size: 22px; font-weight: 600; color: var(--text); }
+.pageTitle { font-size: 22px; font-weight: 700; color: var(--text); letter-spacing: -0.02em; }
 
 .addBtn {
   background: var(--accent-bg);
   color: var(--accent-text);
   padding: 9px 18px;
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.addBtn:hover { opacity: 0.85; }
+.addBtn:hover { filter: brightness(1.08); }
 
 .list { display: flex; flex-direction: column; gap: 10px; }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-right: 3px solid var(--border);
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s;
-  box-shadow: var(--shadow);
 }
-.card:hover { border-color: var(--border-strong); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.card:hover { border-color: var(--accent); border-right-color: var(--accent); box-shadow: var(--shadow-md); }
 
 .cardTop {
   display: flex;

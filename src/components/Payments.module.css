@@ -9,7 +9,7 @@
   gap: 10px;
 }
 
-.pageTitle { font-size: 22px; font-weight: 600; }
+.pageTitle { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
 
 .filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
@@ -29,7 +29,7 @@
 }
 .filterBtn:first-child { border-left: none; }
 .filterBtn:hover { background: var(--bg); color: var(--text); }
-.filterBtnActive { background: var(--text) !important; color: var(--surface) !important; }
+.filterBtnActive { background: var(--accent-bg) !important; color: var(--accent-text) !important; }
 
 /* Metrics */
 .metrics {
@@ -45,11 +45,21 @@
   border-radius: var(--radius);
   padding: 1rem 1.25rem;
   text-align: center;
-  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
 }
-.metricDanger { border-color: var(--danger); background: var(--danger-bg); }
-.metricSuccess { border-color: var(--success); background: var(--success-bg); }
-.metricVal { font-size: 20px; font-weight: 600; color: var(--text); }
+.metric::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0; left: 0;
+  height: 3px;
+  background: var(--border);
+  transition: background .15s;
+}
+.metric:hover::after { background: var(--accent); }
+.metricDanger::after { background: var(--danger) !important; }
+.metricSuccess::after { background: var(--success) !important; }
+.metricVal { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
 .metricDanger .metricVal { color: var(--danger); }
 .metricSuccess .metricVal { color: var(--success); }
 .metricLbl { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
@@ -58,12 +68,13 @@
 .eventCard {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-right: 3px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 12px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  transition: border-color .15s;
 }
-.eventCardDone { border-color: #b7dfb0; }
+.eventCardDone { border-right-color: var(--success); }
 
 .eventCardHeader {
   display: flex;
@@ -178,20 +189,20 @@
 }
 
 .payAllBtn {
-  background: #3b6d11;
+  background: var(--success);
   color: white;
   border: none;
   padding: 5px 12px;
   border-radius: var(--radius-sm);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 600;
   display: flex;
   align-items: center;
   gap: 4px;
   cursor: pointer;
   font-family: inherit;
 }
-.payAllBtn:hover { background: #2d5209; }
+.payAllBtn:hover { filter: brightness(1.1); }
 
 /* ── Billing view ── */
 .headLeft { min-width: 0; }

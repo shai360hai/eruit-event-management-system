@@ -10,30 +10,31 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem;
+  padding: 0.9rem 1.25rem;
   border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--nav-bg);
 }
 
 .monthTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
 .navBtn {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  width: 32px;
-  height: 32px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.7);
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 15px;
 }
-.navBtn:hover { background: var(--surface); color: var(--text); }
+.navBtn:hover { background: rgba(255,255,255,0.14); color: #fff; }
 
 .dayNames {
   display: grid;
@@ -85,7 +86,7 @@
   font-weight: 600;
 }
 
-.cell.selectedCell { background: #f0f4ff; }
+.cell.selectedCell { background: var(--accent-muted); }
 .cell.hasEvents { }
 
 .dayNum {
@@ -328,14 +329,14 @@
 .monthTitleWrap { display: flex; align-items: center; gap: 10px; }
 .todayBtn {
   background: transparent;
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.65);
   padding: 3px 12px;
   font-size: 12px;
   border-radius: var(--radius-sm);
   cursor: pointer;
 }
-.todayBtn:hover { border-color: var(--border-strong); color: var(--text); }
+.todayBtn:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ── Layout with legend sidebar ── */
 .layout {

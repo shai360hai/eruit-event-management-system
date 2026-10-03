@@ -8,9 +8,12 @@
 
 .title {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1.25rem;
   color: var(--text);
+  letter-spacing: -0.01em;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
 }
 
 .grid2 {

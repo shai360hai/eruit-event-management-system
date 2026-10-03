@@ -8,7 +8,7 @@
   gap: 12px;
   flex-wrap: wrap;
 }
-.pageTitle { font-size: 22px; font-weight: 700; }
+.pageTitle { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
 .headerActions { display: flex; gap: 8px; align-items: center; }
 .headerActions select {
   padding: 8px 12px;
@@ -37,12 +37,13 @@
 .payerCard {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-right: 3px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 16px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  transition: border-color .15s;
 }
-.payerCardDone { border-color: var(--success); }
+.payerCardDone { border-right-color: var(--success) !important; }
 
 .payerCardHead {
   padding: 16px 18px;
@@ -110,7 +111,7 @@
   margin-right: auto;
   white-space: nowrap;
 }
-.addPayBtn:hover { opacity: 0.85; }
+.addPayBtn:hover { filter: brightness(1.08); }
 
 /* ── Add payment form ── */
 .addPayForm {

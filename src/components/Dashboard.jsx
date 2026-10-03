@@ -57,35 +57,27 @@ export default function Dashboard({ events, onNavigate }) {
 
       {/* Key metrics — all from same source */}
       <div className={styles.metrics}>
-        <div className={styles.metric} onClick={() => onNavigate('list')}>
-          <div className={styles.metricIcon} style={{background:'var(--chip-bg)'}}>
-            <i className="ti ti-calendar-event" style={{color:'var(--chip-text)'}} />
-          </div>
+        <div className={`${styles.metric} ${styles.metricAccent}`} onClick={() => onNavigate('list')}>
+          <div className={styles.metricIcon}><i className="ti ti-calendar-event" /></div>
           <div className={styles.metricVal}>{monthEvents.length}</div>
           <div className={styles.metricLbl}>אירועים החודש</div>
         </div>
 
         <div className={styles.metric}>
-          <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
-            <i className="ti ti-cash" style={{color:'var(--success)'}} />
-          </div>
+          <div className={styles.metricIcon}><i className="ti ti-coin" /></div>
           <div className={styles.metricVal}>₪{monthSalary.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שכר החודש</div>
         </div>
 
         <div className={`${styles.metric} ${monthPaid > 0 ? styles.metricSuccess : ''}`}>
-          <div className={styles.metricIcon} style={{background:'var(--success-bg)'}}>
-            <i className="ti ti-check" style={{color:'var(--success)'}} />
-          </div>
-          <div className={styles.metricVal} style={{color:'var(--success)'}}>₪{monthPaid.toLocaleString('he-IL')}</div>
+          <div className={styles.metricIcon}><i className="ti ti-circle-check" /></div>
+          <div className={styles.metricVal} style={{color: monthPaid > 0 ? 'var(--success)' : 'inherit'}}>₪{monthPaid.toLocaleString('he-IL')}</div>
           <div className={styles.metricLbl}>שולם החודש</div>
         </div>
 
         <div className={`${styles.metric} ${monthUnpaid > 0 ? styles.metricDanger : ''}`}
           onClick={() => onNavigate('payments')}>
-          <div className={styles.metricIcon} style={{background:'var(--danger-bg)'}}>
-            <i className="ti ti-alert-circle" style={{color:'var(--danger)'}} />
-          </div>
+          <div className={styles.metricIcon}><i className="ti ti-clock-exclamation" /></div>
           <div className={styles.metricVal} style={{color: monthUnpaid > 0 ? 'var(--danger)' : 'inherit'}}>
             ₪{monthUnpaid.toLocaleString('he-IL')}
           </div>

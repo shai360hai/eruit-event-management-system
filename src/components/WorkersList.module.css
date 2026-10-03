@@ -9,7 +9,7 @@
   flex-wrap: wrap;
 }
 
-.pageTitle { font-size: 22px; font-weight: 600; }
+.pageTitle { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
 
 .headerActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .searchInput { width: 150px; }
@@ -25,12 +25,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #fdf5f5;
-  border: 1px solid #f5c6c6;
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
   border-radius: var(--radius-sm);
   padding: 10px 14px;
   font-size: 14px;
-  color: #c0392b;
+  color: var(--danger);
   margin-bottom: 1rem;
 }
 .owedBanner i { font-size: 16px; }
@@ -53,11 +53,13 @@
 .workerBlock {
   background: var(--surface);
   border: 1px solid var(--border);
+  border-right: 3px solid var(--border);
   border-radius: var(--radius);
   margin-bottom: 8px;
   overflow: hidden;
-  box-shadow: var(--shadow);
+  transition: border-color .15s;
 }
+.workerBlock:hover { border-right-color: var(--accent); }
 
 .workerRow {
   display: grid;
@@ -120,7 +122,7 @@
   align-items: center;
 }
 .detailRow:last-of-type { border-bottom: none; }
-.detailRowUnpaid { background: #fffaf9; }
+.detailRowUnpaid { background: var(--danger-bg); }
 
 .detailTotal {
   display: grid;
@@ -134,7 +136,7 @@
 
 .paidToggleCell { display: flex; align-items: center; justify-content: center; }
 .paidToggle { display: flex; align-items: center; cursor: pointer; }
-.paidToggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: #3b6d11; cursor: pointer; }
+.paidToggle input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--success); cursor: pointer; }
 
 .noEvents { font-size: 13px; color: var(--text-hint); padding: 10px 0; }
 
@@ -149,7 +151,7 @@
 
 /* Buttons */
 .addBtn { background: var(--accent-bg); color: var(--accent-text); border: none; padding: 7px 14px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
-.addBtn:hover { opacity: 0.85; }
+.addBtn:hover { filter: brightness(1.08); }
 
 .exportBtn { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); padding: 7px 14px; font-size: 13px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 5px; font-weight: 500; white-space: nowrap; }
 .exportBtn:hover { border-color: var(--border-strong); color: var(--text); }
